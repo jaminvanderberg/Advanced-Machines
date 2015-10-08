@@ -1,16 +1,14 @@
-[
-{
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+[ {
+  "modid": "advanced_machines",
+  "name": "Advanced Machines",
+  "description": "Lag-friendly, server-friendly, and space-friendly machines for late-game Minecraft worlds",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["jaminvanderberg"],
+  "credits": "Jamin VanderBerg",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
-}
-]
+} ]
