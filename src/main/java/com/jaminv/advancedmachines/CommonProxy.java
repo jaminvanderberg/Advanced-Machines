@@ -1,6 +1,7 @@
 package com.jaminv.advancedmachines;
 
 import com.jaminv.advancedmachines.block.ModBlocks;
+import com.jaminv.advancedmachines.crafting.ModCrafting;
 import com.jaminv.advancedmachines.item.ModItems;
 
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -12,6 +13,7 @@ public class CommonProxy {
 	public void preInit( FMLPreInitializationEvent e ) {
 		ModItems.init();
 		ModBlocks.init();
+		ModCrafting.init();
 	}
 	
 	public void init( FMLInitializationEvent e ) {
