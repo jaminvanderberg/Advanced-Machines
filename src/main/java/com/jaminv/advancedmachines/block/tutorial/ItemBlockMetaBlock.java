@@ -1,4 +1,4 @@
-package com.jaminv.advancedmachines.block;
+package com.jaminv.advancedmachines.block.tutorial;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlockWithMetadata;

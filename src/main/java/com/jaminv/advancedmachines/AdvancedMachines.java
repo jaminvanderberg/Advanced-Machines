@@ -8,18 +8,22 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
-@Mod( modid = Main.MODID, name = Main.MODNAME, version = Main.VERSION )
-public class Main {
+@Mod( modid = AdvancedMachines.MODID, name = AdvancedMachines.MODNAME, version = AdvancedMachines.VERSION )
+public class AdvancedMachines {
 
 	public static final String MODID = "advancedmachines";
 	public static final String MODNAME = "Advanded Machines";
 	public static final String VERSION = "0.0.1";
 	
 	@Instance
-	public static Main instance = new Main();
+	public static AdvancedMachines instance = new AdvancedMachines();
 	
 	@SidedProxy( clientSide = "com.jaminv.advancedmachines.ClientProxy", serverSide = "com.jaminv.advancedmachines.ServerProxy" )
 	public static CommonProxy proxy;
+	
+	private static int modGuiIndex = 0;
+	
+	public static final int GUI_MACHINE = modGuiIndex++;
 	
 	@EventHandler
 	public void preInit( FMLPreInitializationEvent e ) {

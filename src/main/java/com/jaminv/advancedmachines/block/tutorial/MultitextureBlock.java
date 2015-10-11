@@ -1,6 +1,6 @@
-package com.jaminv.advancedmachines.block;
+package com.jaminv.advancedmachines.block.tutorial;
 
-import com.jaminv.advancedmachines.Main;
+import com.jaminv.advancedmachines.AdvancedMachines;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -10,10 +10,10 @@ import net.minecraft.util.IIcon;
 
 public class MultitextureBlock extends Block {
 	
-	protected MultitextureBlock( String unlocalizedName, Material mat ) {
+	public MultitextureBlock( String unlocalizedName, Material mat ) {
 		super( mat );
 		this.setBlockName( unlocalizedName );
-		this.setBlockTextureName( Main.MODID + ":" + unlocalizedName );
+		this.setBlockTextureName( AdvancedMachines.MODID + ":" + unlocalizedName );
 		this.setCreativeTab( CreativeTabs.tabBlock );
 		this.setHardness( 2.0F );
 		this.setResistance( 6.0F );

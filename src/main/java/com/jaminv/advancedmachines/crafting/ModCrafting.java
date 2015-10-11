@@ -1,7 +1,8 @@
 package com.jaminv.advancedmachines.crafting;
 
-import com.jaminv.advancedmachines.Main;
+import com.jaminv.advancedmachines.AdvancedMachines;
 import com.jaminv.advancedmachines.block.ModBlocks;
+import com.jaminv.advancedmachines.block.machine.MachineSetup;
 import com.jaminv.advancedmachines.item.ModItems;
 
 import cpw.mods.fml.common.registry.GameRegistry;
@@ -11,7 +12,7 @@ import net.minecraft.item.ItemStack;
 public class ModCrafting {
 	
 	public static final void init() {
-		System.out.println( "[" + Main.MODNAME + "].ModCrafting Initialization Start." );
+		System.out.println( "[" + AdvancedMachines.MODNAME + "].ModCrafting Initialization Start." );
 		
 		GameRegistry.addRecipe(
 			new ItemStack( ModBlocks.testBlock ),
@@ -24,8 +25,10 @@ public class ModCrafting {
 			new ItemStack( ModItems.testItem ),
 			1.0F
 		);
+		
+		MachineSetup.setupCrafting();
 
-		System.out.println( "[" + Main.MODNAME + "].ModCrafting Initialization End." );
+		System.out.println( "[" + AdvancedMachines.MODNAME + "].ModCrafting Initialization End." );
 	}
 
 }
