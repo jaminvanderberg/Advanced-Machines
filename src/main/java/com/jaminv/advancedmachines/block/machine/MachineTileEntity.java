@@ -1,11 +1,17 @@
 package com.jaminv.advancedmachines.block.machine;
 
+import java.util.Arrays;
+
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagIntArray;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
+import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.server.gui.IUpdatePlayerListBox;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityFurnace;
@@ -201,74 +207,44 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 		return (short)MathHelper.clamp_int( burntime, 0, Short.MAX_VALUE );
 	}
 	
-	public String getCustomName() {
-		return this.customName;
-	}
-
-	public void setCustomName( String customName ) {
-		this.customName = customName;
-	}
-
-	@Override
-	public String getInventoryName() {
-		return this.hasCustomInventoryName() ? this.customName : "contained.tutorial_tile_entity";
-	}
-
-	@Override
-	public boolean hasCustomInventoryName() {
-		return this.customName != null && !this.customName.equals( "" );
-	}
-	
-//	@Override
-//	public IChatComponent getDisplayName() {
-//	    return this.hasCustomName() ? new ChatComponentText(this.getName()) : new ChatComponentTranslation(this.getName());
-//	}
-
+	/**
+	 * Gets the number of slots in the inventory
+	 */
 	@Override
 	public int getSizeInventory() {
-		return 9;
+		return itemStacks.length;
 	}
 
+
+	/**
+	 * Gets the stack in the gien slot
+	 */
 	@Override
 	public ItemStack getStackInSlot( int index ) {
 		if ( index < 0 || index >= this.getSizeInventory() ) {
 			return null;
 		}
-		return this.inventory[index];
+		return this.itemStacks[index];
 	}
 
+	
 	@Override
 	public ItemStack decrStackSize( int index, int count ) {
-		if ( this.getStackInSlot( index ) != null ) {
-			ItemStack itemstack;
-			
-			if ( this.getStackInSlot( index ).stackSize <= count ) {
-				itemstack = this.getStackInSlot( index );
-				this.setInventorySlotContents( index, null );
-				this.markDirty();
-				return itemstack;
-			} else {
-				itemstack = this.getStackInSlot( index ).splitStack( count );
-				
-				if ( this.getStackInSlot( index ).stackSize <= 0 ) {
-					this.setInventorySlotContents( index, null );
-				} else {
-					this.setInventorySlotContents( index, this.getStackInSlot( index ) );
-				}
-				
-				this.markDirty();
-				return itemstack;
-			}
-		} else {
-			return null;
-		}
-	}
+		ItemStack itemstack = getStackInSlot( index );
+		if ( itemstack == null ) { return null; }
 
-	@Override
-	public ItemStack getStackInSlotOnClosing( int index ) {
-		ItemStack stack = this.getStackInSlot( index );
-		this.setInventorySlotContents( index, null );
-		return stack;
+		ItemStack itemstackRemoved;
+		if ( itemstack.stackSize <= count ) {
+			itemstackRemoved = itemstack;
+			this.setInventorySlotContents( index, null );
+		} else {
+			itemstackRemoved = itemstack.splitStack( count );
+			if ( itemstack.stackSize == 0 ) {
+				this.setInventorySlotContents( index, null );
+			}
+		}
+		markDirty();
+		return itemstackRemoved;
 	}
 
 	@Override
@@ -285,27 +261,48 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 			stack = null;
 		}
 		
-		this.inventory[index] = stack;
+		this.itemStacks[index] = stack;
 		this.markDirty();
 	}
-
+	
 	@Override
 	public int getInventoryStackLimit() {
 		return 64;
 	}
+	
+
+	@Override
+	public ItemStack getStackInSlotOnClosing( int index ) {
+		ItemStack stack = this.getStackInSlot( index );
+		this.setInventorySlotContents( index, null );
+		return stack;
+	}
+	
 
 	@Override
 	public boolean isUseableByPlayer( EntityPlayer player ) {
-		return this.worldObj.getTileEntity( this.xCoord, this.yCoord, this.zCoord ) == this &&
-			player.getDistanceSq( this.xCoord + 0.5, this.yCoord + 0.5, this.zCoord + 0.5 ) <= 64;
+		if ( this.worldObj.getTileEntity( this.xCoord, this.yCoord, this.zCoord ) != this ) return false;
+		final double X_CENTER_OFFSET = 0.5;
+		final double Y_CENTER_OFFSET = 0.5;
+		final double Z_CENTER_OFFSET = 0.5;
+		final double MAXIMUM_DISTANCE_SQ = 8.0 * 8.0;
+		return player.getDistanceSq( 
+				this.xCoord + X_CENTER_OFFSET
+				, this.yCoord + Y_CENTER_OFFSET
+				, this.zCoord + Z_CENTER_OFFSET 
+			) <= MAXIMUM_DISTANCE_SQ;
 	}
-
-	@Override
-	public void openInventory() {
+	
+	static public boolean isItemValidForFuelSlot( ItemStack itemstack ) {
+		return getItemBurnTime( itemstack ) > 0;
 	}
-
-	@Override
-	public void closeInventory() {
+	
+	static public boolean isItemValidForInputSlot( ItemStack itemstack ) {
+		return getSmeltingResultForItem( itemstack ) != null;
+	}
+	
+	static public boolean isItemValidForOutputStack( ItemStack itemstack ) {
+		return false;
 	}
 
 	@Override
@@ -328,9 +325,9 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 		}
 		nbt.setTag( "Items", list );
 		
-		if ( this.hasCustomInventoryName() ) {
-			nbt.setString( "CustomName", this.getCustomName() );
-		}
+		nbt.setShort("cookTime", cookTime);
+		nbt.setTag("burnTimeRemaining", new NBTTagIntArray( burnTimeRemaining ) );
+		nbt.setTag("burnTimeInitial", new NBTTagIntArray( burnTimeInitialValue ) );
 	}
 	
 	@Override
@@ -340,13 +337,58 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 		NBTTagList list = nbt.getTagList( "Items", 10 );
 		for ( int i = 0; i < list.tagCount(); i++ ) {
 			NBTTagCompound stackTag = list.getCompoundTagAt( i );
-			int slot = stackTag.getByte( "Slot" ) & 255;
+			byte slot = stackTag.getByte( "Slot" );
 			this.setInventorySlotContents( slot, ItemStack.loadItemStackFromNBT( stackTag ) );
 		}
 		
-		if ( nbt.hasKey( "CustomName", 8 ) ) {
-			this.setCustomName( nbt.getString( "CustomName" ) );
-		}
+		cookTime = nbt.getShort( "cookTime" );
+		burnTimeRemaining = Arrays.copyOf( nbt.getIntArray( "burnTImeRemaining" ), FUEL_SLOTS_COUNT );
+		burnTimeInitialValue = Arrays.copyOf( nbt.getIntArray( "burnTimeInitial" ), FUEL_SLOTS_COUNT );
+		cachedNumberOfBurningSlots = -1;
 	}
+	
+	@Override
+	public Packet getDescriptionPacket() {
+		NBTTagCompound nbt = new NBTTagCompound();
+		writeToNBT( nbt );
+		final int METADATA = 0;
+		return new S35PacketUpdateTileEntity( this.xCoord, this.yCoord, this.zCoord, METADATA, nbt );
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
+		readFromNBT( pkt.func_148857_g() );
+	}
+	
+// ----------------------
+	
+
+	
+	@Override
+	public String getInventoryName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean hasCustomInventoryName() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void openInventory() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void closeInventory() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	
 
 }
