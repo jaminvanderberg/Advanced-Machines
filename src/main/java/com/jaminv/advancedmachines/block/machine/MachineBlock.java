@@ -17,12 +17,9 @@ import net.minecraft.world.World;
 public class MachineBlock extends BlockContainer {
 
 	protected MachineBlock( String unlocalizedName ) {
-		super( Material.iron );
+		super( Material.rock );
 		this.setBlockName( unlocalizedName );
 		this.setCreativeTab( CreativeTabs.tabBlock );		
-		this.setHardness( 2.0f );
-		this.setResistance( 6.0f );
-		this.setHarvestLevel( "pickaxe", 2 );
 	}
 
 	@Override
@@ -33,7 +30,7 @@ public class MachineBlock extends BlockContainer {
 	@Override
 	public void breakBlock( World worldIn, int posX, int posY, int posZ, Block block, int state ) {
 		IInventory inventory = worldIn.getTileEntity( posX, posY, posZ ) instanceof IInventory ? (IInventory)worldIn.getTileEntity( posX, posY, posZ ) : null;
-
+		
 		if (inventory != null){
 			// For each slot in the inventory
 			for (int i = 0; i < inventory.getSizeInventory(); i++){
@@ -82,5 +79,7 @@ public class MachineBlock extends BlockContainer {
 		}
 		return true;
 	}
+
+	
 	
 }
