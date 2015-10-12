@@ -66,13 +66,6 @@ public class MachineBlock extends BlockContainer {
 	}	
 
 	@Override
-	public void onBlockPlacedBy( World worldIn, int posX, int posY, int posZ, EntityLivingBase placer, ItemStack stack ) {
-		if ( stack.hasDisplayName() ) {
-			((MachineTileEntity) worldIn.getTileEntity( posX, posY, posZ )).setCustomName( stack.getDisplayName() );
-		}
-	}
-
-	@Override
 	public boolean onBlockActivated( World world, int posX, int posY, int posZ, EntityPlayer player, int side, float hitX, float hitY, float hitZ ) {
 		if ( ! world.isRemote ) {
 			player.openGui( AdvancedMachines.instance, AdvancedMachines.GUI_MACHINE, world, posX, posY, posZ );

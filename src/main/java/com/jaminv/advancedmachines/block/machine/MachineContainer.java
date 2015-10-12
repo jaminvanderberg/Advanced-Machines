@@ -82,7 +82,7 @@ public class MachineContainer extends Container {
 		// Tile entity input slots
 		for ( int y = 0; y < INPUT_SLOTS_COUNT; y++ ) {
 			int slotNumber = y + FIRST_INPUT_SLOT_NUMBER;
-			this.addSlotToContiner( new SlotSmeltableInput( te, slotNumber, INPUT_SLOTS_XPOS, FUEL_SLOTS_YPOS + SLOT_Y_SPACING * y ) );	
+			this.addSlotToContainer( new SlotSmeltableInput( te, slotNumber, INPUT_SLOTS_XPOS, FUEL_SLOTS_YPOS + SLOT_Y_SPACING * y ) );	
 		}
 		
 		final int OUTPUT_SLOTS_XPOS = 134;
@@ -90,7 +90,7 @@ public class MachineContainer extends Container {
 		// Tile entity output slots
 		for ( int y = 0; y < OUTPUT_SLOTS_COUNT; y++ ) {
 			int slotNumber = y + FIRST_OUTPUT_SLOT_NUMBER;
-			this.addSlotToContiner( new SlotOutput( te, slotNumber, OUTPUT_SLOTS_XPOS, OUTPUT_SLOTS_YPOS + SLOT_Y_SPACING * y ) );	
+			this.addSlotToContainer( new SlotOutput( te, slotNumber, OUTPUT_SLOTS_XPOS, OUTPUT_SLOTS_YPOS + SLOT_Y_SPACING * y ) );	
 		}
 	}
 

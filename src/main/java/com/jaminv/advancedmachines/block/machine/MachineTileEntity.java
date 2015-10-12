@@ -217,7 +217,7 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 
 
 	/**
-	 * Gets the stack in the gien slot
+	 * Gets the stack in the given slot
 	 */
 	@Override
 	public ItemStack getStackInSlot( int index ) {
@@ -269,15 +269,6 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 	public int getInventoryStackLimit() {
 		return 64;
 	}
-	
-
-	@Override
-	public ItemStack getStackInSlotOnClosing( int index ) {
-		ItemStack stack = this.getStackInSlot( index );
-		this.setInventorySlotContents( index, null );
-		return stack;
-	}
-	
 
 	@Override
 	public boolean isUseableByPlayer( EntityPlayer player ) {
@@ -301,13 +292,8 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 		return getSmeltingResultForItem( itemstack ) != null;
 	}
 	
-	static public boolean isItemValidForOutputStack( ItemStack itemstack ) {
+	static public boolean isItemValidForOutputSlot( ItemStack itemstack ) {
 		return false;
-	}
-
-	@Override
-	public boolean isItemValidForSlot( int index, ItemStack stack ) {
-		return true;
 	}
 
 	@Override
@@ -342,7 +328,7 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 		}
 		
 		cookTime = nbt.getShort( "cookTime" );
-		burnTimeRemaining = Arrays.copyOf( nbt.getIntArray( "burnTImeRemaining" ), FUEL_SLOTS_COUNT );
+		burnTimeRemaining = Arrays.copyOf( nbt.getIntArray( "burnTimeRemaining" ), FUEL_SLOTS_COUNT );
 		burnTimeInitialValue = Arrays.copyOf( nbt.getIntArray( "burnTimeInitial" ), FUEL_SLOTS_COUNT );
 		cachedNumberOfBurningSlots = -1;
 	}
@@ -362,33 +348,77 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 	
 // ----------------------
 	
-
+	public void clear() {
+		Arrays.fill( itemStacks, null );
+	}
 	
 	@Override
 	public String getInventoryName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "container:advancedmachines.furnace.name";
 	}
 
 	@Override
 	public boolean hasCustomInventoryName() {
-		// TODO Auto-generated method stub
 		return false;
 	}
-
-	@Override
-	public void openInventory() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void closeInventory() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
 	
+// ======== //
+//  Fields  //
+// ======== //
+	
+	private static final byte COOK_FIELD_ID = 0;
+	private static final byte FIRST_BURN_TIME_REMAINING_FIELD_ID = 1;
+	private static final byte FIRST_BURN_TIME_INITIAL_FIELD_ID = FIRST_BURN_TIME_REMAINING_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
+	private static final byte NUMBER_OF_FIELDS = FIRST_BURN_TIME_INITIAL_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
+	
+	public int getField( int id ) {
+		if ( id == COOK_FIELD_ID ) { return cookTime; }
+		if ( id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT ) {
+			return burnTimeRemaining[id - FIRST_BURN_TIME_REMAINING_FIELD_ID];
+		}
+		if ( id >= FIRST_BURN_TIME_INITIAL_FIELD_ID && id < FIRST_BURN_TIME_INITIAL_FIELD_ID + FUEL_SLOTS_COUNT ) {
+			return burnTimeInitialValue[id - FIRST_BURN_TIME_INITIAL_FIELD_ID];
+		}
+		System.err.println( "Invalid field ID in MachineTileEntity.getField: " + id );
+		return 0;
+	}
+	
+	public void setField( int id, int value ) {
+		if ( id == COOK_FIELD_ID ) { cookTime = (short)value; }
+		if ( id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT ) {
+			burnTimeRemaining[id - FIRST_BURN_TIME_REMAINING_FIELD_ID] = value;
+		}
+		if ( id >= FIRST_BURN_TIME_INITIAL_FIELD_ID && id < FIRST_BURN_TIME_INITIAL_FIELD_ID + FUEL_SLOTS_COUNT ) {
+			burnTimeInitialValue[id - FIRST_BURN_TIME_INITIAL_FIELD_ID] = value;
+		} else {
+			System.err.println( "Invalid field ID in MachineTileEntity.getField: " + id );
+		}
+	}
+	
+	public int getFieldCount() {
+		return NUMBER_OF_FIELDS;
+	}
+	
+// ===================== //
+//  Unused but required  //
+// ===================== //
+	
+	@Override
+	public boolean isItemValidForSlot( int index, ItemStack stack ) {
+		return true;
+	}
+	
+	@Override
+	public ItemStack getStackInSlotOnClosing( int index ) {
+		ItemStack stack = this.getStackInSlot( index );
+		this.setInventorySlotContents( index, null );
+		return stack;
+	}	
+
+	@Override
+	public void openInventory() { }
+
+	@Override
+	public void closeInventory() { }
 
 }
