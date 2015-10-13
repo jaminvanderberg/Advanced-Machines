@@ -2,6 +2,7 @@ package com.jaminv.advancedmachines.block.machine;
 
 import java.util.Arrays;
 
+import cofh.api.energy.IEnergyReceiver;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -19,8 +20,12 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
+import net.minecraftforge.common.util.ForgeDirection;
 
-public class MachineTileEntity extends TileEntity implements IInventory, IUpdatePlayerListBox {
+public class MachineTileEntity extends TileEntity implements IInventory, IUpdatePlayerListBox, IEnergyReceiver {
+	
+	public static final int CAPACITY = 60000;
+	
 	public static final int FUEL_SLOTS_COUNT = 4;
 	public static final int INPUT_SLOTS_COUNT = 5;
 	public static final int OUTPUT_SLOTS_COUNT = 5;
@@ -111,7 +116,7 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 			int fuelSlotNumber = i + FIRST_FUEL_SLOT;
 			if ( burnTimeRemaining[i] > 0 ) {
 				burnTimeRemaining[i]--;
-				burningCount++;
+				burningCount+=10;
 			}
 			if ( burnTimeRemaining[i] == 0 ) {
 				if ( itemStacks[fuelSlotNumber] != null && getItemBurnTime( itemStacks[fuelSlotNumber] ) > 0) {
@@ -384,14 +389,14 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 	}
 	
 	public void setField( int id, int value ) {
-		if ( id == COOK_FIELD_ID ) { cookTime = (short)value; }
-		if ( id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT ) {
+		if ( id == COOK_FIELD_ID ) { 
+			cookTime = (short)value; 
+		} else if ( id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT ) {
 			burnTimeRemaining[id - FIRST_BURN_TIME_REMAINING_FIELD_ID] = value;
-		}
-		if ( id >= FIRST_BURN_TIME_INITIAL_FIELD_ID && id < FIRST_BURN_TIME_INITIAL_FIELD_ID + FUEL_SLOTS_COUNT ) {
+		} else if ( id >= FIRST_BURN_TIME_INITIAL_FIELD_ID && id < FIRST_BURN_TIME_INITIAL_FIELD_ID + FUEL_SLOTS_COUNT ) {
 			burnTimeInitialValue[id - FIRST_BURN_TIME_INITIAL_FIELD_ID] = value;
 		} else {
-			System.err.println( "Invalid field ID in MachineTileEntity.getField: " + id );
+			System.err.println( "Invalid field ID in MachineTileEntity.setField: " + id );
 		}
 	}
 	
@@ -420,5 +425,34 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 
 	@Override
 	public void closeInventory() { }
+
+// ================= //
+//  IEnergyReceiver  //
+// ================= //
+
+	@Override
+	public boolean canConnectEnergy(ForgeDirection from) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public int receiveEnergy(ForgeDirection from, int maxReceive, boolean simulate) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getEnergyStored(ForgeDirection from) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getMaxEnergyStored(ForgeDirection from) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
 
 }
