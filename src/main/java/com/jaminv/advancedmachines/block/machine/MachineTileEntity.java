@@ -382,7 +382,7 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 	private static final byte FIRST_BURN_TIME_REMAINING_FIELD_ID = 1;
 	private static final byte FIRST_BURN_TIME_INITIAL_FIELD_ID = FIRST_BURN_TIME_REMAINING_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
 	private static final byte ENERGY_FIELD_ID = FIRST_BURN_TIME_INITIAL_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
-	private static final byte NUMBER_OF_FIELDS = ENERGY_FIELD_ID;
+	private static final byte NUMBER_OF_FIELDS = ENERGY_FIELD_ID + 1;
 	
 	public int getField( int id ) {
 		if ( id == COOK_FIELD_ID ) { return cookTime; }
@@ -470,7 +470,6 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 	}
 	
 	public double getEnergyPercent() {
-		System.out.println( this.energy );
 		return this.energy / (double)RF_CAPACITY;
 	}
 

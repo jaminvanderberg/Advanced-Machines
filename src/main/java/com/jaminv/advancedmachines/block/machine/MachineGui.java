@@ -75,13 +75,12 @@ public class MachineGui extends GuiContainer {
 		}
 		
 		double energy = te.getEnergyPercent();
-		System.out.println( energy );
 		int yOffset = (int)( ( 1.0 - energy ) * ENERGY_HEIGHT );
 		this.drawTexturedModalRect(
 			this.guiLeft + ENERGY_XPOS,
 			this.guiTop + ENERGY_YPOS + yOffset,
 			ENERGY_ICON_U,
-			ENERGY_ICON_V,
+			ENERGY_ICON_V + yOffset,
 			ENERGY_WIDTH,
 			ENERGY_HEIGHT - yOffset
 		);
