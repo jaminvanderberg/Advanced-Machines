@@ -38,6 +38,13 @@ public class MachineGui extends GuiContainer {
 	final int FLAME_WIDTH = 14;
 	final int FLAME_HEIGHT = 14;
 	final int FLAME_X_SPACING = 18;
+	
+	final int ENERGY_XPOS = 7;
+	final int ENERGY_YPOS = 23;
+	final int ENERGY_ICON_U = 187;
+	final int ENERGY_ICON_V = 23;
+	final int ENERGY_WIDTH = 18;
+	final int ENERGY_HEIGHT = 90;
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer( float partialTicks, int mouseX, int mouseY ) {
@@ -66,6 +73,18 @@ public class MachineGui extends GuiContainer {
 				FLAME_HEIGHT - yOffset
 			);
 		}
+		
+		double energy = te.getEnergyPercent();
+		System.out.println( energy );
+		int yOffset = (int)( ( 1.0 - energy ) * ENERGY_HEIGHT );
+		this.drawTexturedModalRect(
+			this.guiLeft + ENERGY_XPOS,
+			this.guiTop + ENERGY_YPOS + yOffset,
+			ENERGY_ICON_U,
+			ENERGY_ICON_V,
+			ENERGY_WIDTH,
+			ENERGY_HEIGHT - yOffset
+		);
 	}
 
 }

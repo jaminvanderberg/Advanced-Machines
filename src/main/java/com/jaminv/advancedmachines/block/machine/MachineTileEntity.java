@@ -24,7 +24,8 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 public class MachineTileEntity extends TileEntity implements IInventory, IUpdatePlayerListBox, IEnergyReceiver {
 	
-	public static final int CAPACITY = 60000;
+	public static final int RF_CAPACITY = 60000;
+	public static final int RF_MAX_RECEIVE = 200;
 	
 	public static final int FUEL_SLOTS_COUNT = 4;
 	public static final int INPUT_SLOTS_COUNT = 5;
@@ -45,6 +46,8 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 	private static final short COOK_TIME_FOR_COMPLETION = 200;
 	
 	private int cachedNumberOfBurningSlots = -1;
+	
+	private int energy = 0;
 	
 	public double fractionOfFuelRemaining( int fuelSlot ) {
 		if ( burnTimeInitialValue[fuelSlot] <= 0 ) { return 0; }
@@ -316,9 +319,11 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 		}
 		nbt.setTag( "Items", list );
 		
-		nbt.setShort("cookTime", cookTime);
-		nbt.setTag("burnTimeRemaining", new NBTTagIntArray( burnTimeRemaining ) );
-		nbt.setTag("burnTimeInitial", new NBTTagIntArray( burnTimeInitialValue ) );
+		nbt.setShort( "cookTime", cookTime );
+		nbt.setTag( "burnTimeRemaining", new NBTTagIntArray( burnTimeRemaining ) );
+		nbt.setTag( "burnTimeInitial", new NBTTagIntArray( burnTimeInitialValue ) );
+		
+		nbt.setInteger( "energy", this.energy );
 	}
 	
 	@Override
@@ -336,6 +341,8 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 		burnTimeRemaining = Arrays.copyOf( nbt.getIntArray( "burnTimeRemaining" ), FUEL_SLOTS_COUNT );
 		burnTimeInitialValue = Arrays.copyOf( nbt.getIntArray( "burnTimeInitial" ), FUEL_SLOTS_COUNT );
 		cachedNumberOfBurningSlots = -1;
+		
+		energy = nbt.getInteger( "energy" );
 	}
 	
 	@Override
@@ -374,7 +381,8 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 	private static final byte COOK_FIELD_ID = 0;
 	private static final byte FIRST_BURN_TIME_REMAINING_FIELD_ID = 1;
 	private static final byte FIRST_BURN_TIME_INITIAL_FIELD_ID = FIRST_BURN_TIME_REMAINING_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
-	private static final byte NUMBER_OF_FIELDS = FIRST_BURN_TIME_INITIAL_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
+	private static final byte ENERGY_FIELD_ID = FIRST_BURN_TIME_INITIAL_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
+	private static final byte NUMBER_OF_FIELDS = ENERGY_FIELD_ID;
 	
 	public int getField( int id ) {
 		if ( id == COOK_FIELD_ID ) { return cookTime; }
@@ -383,6 +391,9 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 		}
 		if ( id >= FIRST_BURN_TIME_INITIAL_FIELD_ID && id < FIRST_BURN_TIME_INITIAL_FIELD_ID + FUEL_SLOTS_COUNT ) {
 			return burnTimeInitialValue[id - FIRST_BURN_TIME_INITIAL_FIELD_ID];
+		}
+		if ( id == ENERGY_FIELD_ID ) {
+			return energy;
 		}
 		System.err.println( "Invalid field ID in MachineTileEntity.getField: " + id );
 		return 0;
@@ -395,6 +406,9 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 			burnTimeRemaining[id - FIRST_BURN_TIME_REMAINING_FIELD_ID] = value;
 		} else if ( id >= FIRST_BURN_TIME_INITIAL_FIELD_ID && id < FIRST_BURN_TIME_INITIAL_FIELD_ID + FUEL_SLOTS_COUNT ) {
 			burnTimeInitialValue[id - FIRST_BURN_TIME_INITIAL_FIELD_ID] = value;
+		} else if ( id == ENERGY_FIELD_ID ) {
+			System.out.println( value );
+			energy = value;
 		} else {
 			System.err.println( "Invalid field ID in MachineTileEntity.setField: " + id );
 		}
@@ -431,27 +445,33 @@ public class MachineTileEntity extends TileEntity implements IInventory, IUpdate
 // ================= //
 
 	@Override
-	public boolean canConnectEnergy(ForgeDirection from) {
-		// TODO Auto-generated method stub
-		return true;
+	public boolean canConnectEnergy( ForgeDirection from ) {
+				return true;
 	}
 
 	@Override
-	public int receiveEnergy(ForgeDirection from, int maxReceive, boolean simulate) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int receiveEnergy( ForgeDirection from, int maxReceive, boolean simulate ) {
+		int energyReceived = Math.min( RF_CAPACITY - energy, Math.min( RF_MAX_RECEIVE, maxReceive ) );
+
+		if ( ! simulate ) {
+			this.energy += energyReceived;
+		}
+		return energyReceived;
 	}
 
 	@Override
-	public int getEnergyStored(ForgeDirection from) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getEnergyStored( ForgeDirection from ) {
+		return this.energy;
 	}
 
 	@Override
-	public int getMaxEnergyStored(ForgeDirection from) {
-		// TODO Auto-generated method stub
-		return 0;
+	public int getMaxEnergyStored( ForgeDirection from ) {
+		return RF_CAPACITY;
+	}
+	
+	public double getEnergyPercent() {
+		System.out.println( this.energy );
+		return this.energy / (double)RF_CAPACITY;
 	}
 
 
