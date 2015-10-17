@@ -7,6 +7,7 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 @Mod( modid = AdvancedMachines.MODID, name = AdvancedMachines.MODNAME, version = AdvancedMachines.VERSION )
 public class AdvancedMachines {
@@ -50,5 +51,10 @@ public class AdvancedMachines {
 		proxy.postInit( e );
 		
 		System.out.println( "[" + MODNAME + "] PostInitialization End." );
+	}
+	
+	@EventHandler
+	public void serverStart( FMLServerStartingEvent e ) {
+		proxy.serverStart( e );
 	}
 }
