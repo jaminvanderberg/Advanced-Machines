@@ -4,9 +4,9 @@ import com.jaminv.advancedmachines.AdvancedMachines;
 import com.jaminv.advancedmachines.block.machine.MachineBlock;
 import com.jaminv.advancedmachines.block.machine.MachineSetup;
 import com.jaminv.advancedmachines.block.machine.MachineTileEntity;
+import com.jaminv.advancedmachines.block.ore.BlockOreSetup;
+import com.jaminv.advancedmachines.block.ore.ItemBlockOre;
 import com.jaminv.advancedmachines.block.tutorial.BasicBlock;
-import com.jaminv.advancedmachines.block.tutorial.ItemBlockMetaBlock;
-import com.jaminv.advancedmachines.block.tutorial.MetaBlock;
 import com.jaminv.advancedmachines.block.tutorial.MultitextureBlock;
 import com.jaminv.advancedmachines.gui.ModGuiHandler;
 
@@ -22,12 +22,19 @@ public class ModBlocks {
 	public static Block metaBlock;
 	public static Block tileEntityBlock;
 	
-	public static final void init() {
+	public static final void preInit() {
 		GameRegistry.registerBlock( testBlock = new BasicBlock( "testBlock", Material.iron ), "testBlock" );
 		GameRegistry.registerBlock( multitextureBlock = new MultitextureBlock( "multitextureBlock", Material.cloth ), "multitextureBlock" );
-		GameRegistry.registerBlock( metaBlock = new MetaBlock( "metablock", Material.cloth ), ItemBlockMetaBlock.class, "metablock" );
 		
 		MachineSetup.setupBlocks();
+		BlockOreSetup.setupBlocks();
+	}
+	
+	public static final void init() { }
+	
+	public static final void postInit() {
+		MachineSetup.setupCrafting();
+		BlockOreSetup.setupCrafting();
 	}
 	
 }

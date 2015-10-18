@@ -1,7 +1,9 @@
-item.testItem.name=Test Item
+item.ingotTitanium.name=Titanium Ingot
 item.itemSoulCage.name=Soul Cage
 
 item.itemSoulCage.tooltip.empty=Empty
+
+tile.blockOreTitanium.name=Titanium Ore
 
 msg.soulcage.fail=Failed to capture.  You may need to weaken it first.
 msg.soulcage.invulnerable=Cannot capture.  Entity is invulnerable.

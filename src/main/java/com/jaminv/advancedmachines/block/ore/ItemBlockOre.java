@@ -1,18 +1,18 @@
-package com.jaminv.advancedmachines.block.tutorial;
+package com.jaminv.advancedmachines.block.ore;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.ItemBlockWithMetadata;
 import net.minecraft.item.ItemStack;
 
-public class ItemBlockMetaBlock extends ItemBlockWithMetadata {
+public class ItemBlockOre extends ItemBlockWithMetadata {
 
-	public ItemBlockMetaBlock( Block block ) {
+	public ItemBlockOre( Block block ) {
 		super( block, block );
 	}
 
 	@Override
 	public String getUnlocalizedName( ItemStack stack ) {
-		return this.getUnlocalizedName() + "_" + stack.getItemDamage();
+		return this.getUnlocalizedName() + BlockOre.ORETYPES[stack.getItemDamage()];
 	}
 
 }

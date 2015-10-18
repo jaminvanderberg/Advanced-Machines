@@ -54,8 +54,8 @@ public class ItemSoulCage extends Item {
 	@Override
 	@SideOnly( Side.CLIENT )
 	public void registerIcons( IIconRegister ir ) {
-		itemIcon = ir.registerIcon( "advancedmachines:soulcage" );
-		filledIcon = ir.registerIcon( "advancedmachines:soulcage-filled" );
+		itemIcon = ir.registerIcon( AdvancedMachines.MODID + ":soulcage" );
+		filledIcon = ir.registerIcon( AdvancedMachines.MODID + ":soulcage-filled" );
 	}
 	
 	public boolean containsSoul( ItemStack item ) {
