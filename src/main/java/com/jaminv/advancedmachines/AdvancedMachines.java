@@ -1,5 +1,7 @@
 package com.jaminv.advancedmachines;
 
+import com.jaminv.advancedmachines.config.Config;
+
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
@@ -30,6 +32,7 @@ public class AdvancedMachines {
 	public void preInit( FMLPreInitializationEvent e ) {
 		System.out.println( "[" + MODNAME + "] PreInitialization Start." );
 		
+		Config.load( e );
 		proxy.preInit( e );
 		
 		System.out.println( "[" + MODNAME + "] PreInitialization End." );

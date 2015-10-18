@@ -1,1 +1,7 @@
 item.testItem.name=Test Item
+item.itemSoulCage.name=Soul Cage
+
+item.itemSoulCage.tooltip.empty=Empty
+
+msg.soulcage.fail=Failed to capture.  You may need to weaken it first.
+msg.soulcage.invulnerable=Cannot capture.  Entity is invulnerable.
