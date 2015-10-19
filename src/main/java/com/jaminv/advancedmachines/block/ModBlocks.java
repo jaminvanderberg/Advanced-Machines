@@ -4,6 +4,7 @@ import com.jaminv.advancedmachines.AdvancedMachines;
 import com.jaminv.advancedmachines.block.machine.MachineBlock;
 import com.jaminv.advancedmachines.block.machine.MachineSetup;
 import com.jaminv.advancedmachines.block.machine.MachineTileEntity;
+import com.jaminv.advancedmachines.block.mobfarm.MobFarmSetup;
 import com.jaminv.advancedmachines.block.ore.BlockOreSetup;
 import com.jaminv.advancedmachines.block.ore.ItemBlockOre;
 import com.jaminv.advancedmachines.block.tutorial.BasicBlock;
@@ -27,6 +28,7 @@ public class ModBlocks {
 		GameRegistry.registerBlock( multitextureBlock = new MultitextureBlock( "multitextureBlock", Material.cloth ), "multitextureBlock" );
 		
 		MachineSetup.setupBlocks();
+		MobFarmSetup.setupBlocks();
 		BlockOreSetup.setupBlocks();
 	}
 	
@@ -34,6 +36,7 @@ public class ModBlocks {
 	
 	public static final void postInit() {
 		MachineSetup.setupCrafting();
+		MobFarmSetup.setupCrafting();
 		BlockOreSetup.setupCrafting();
 	}
 	

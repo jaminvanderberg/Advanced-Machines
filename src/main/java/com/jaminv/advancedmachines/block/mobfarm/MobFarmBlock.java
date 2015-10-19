@@ -1,11 +1,14 @@
 package com.jaminv.advancedmachines.block.mobfarm;
 
 import com.jaminv.advancedmachines.AdvancedMachines;
+import com.jaminv.advancedmachines.ModObject;
+import com.jaminv.advancedmachines.block.BaseMachineBlock;
 
 import cofh.api.energy.IEnergyStorage;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
@@ -13,15 +16,29 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
-public class MobFarmBlock extends BlockContainer {
+public class MobFarmBlock extends BaseMachineBlock {
 
-	protected MobFarmBlock( String unlocalizedName ) {
-		super( Material.rock );
-		this.setBlockName( unlocalizedName );
-		this.setCreativeTab( CreativeTabs.tabBlock );		
+	public static IIcon[] face;
+	
+	protected MobFarmBlock() {
+		super( ModObject.blockMobFarm );
 	}
+	
+	@Override
+	public void registerBlockIcons( IIconRegister reg ) {
+		super.registerBlockIcons( reg );
+		
+		this.face = new IIcon[1];
+		this.face[0] = reg.registerIcon( AdvancedMachines.MODID + ":MachineMobFarm" );
+	}
+
+	@Override
+	protected IIcon getFace(int meta) {
+		return face[meta];
+	}	
 
 	@Override
 	public TileEntity createNewTileEntity( World worldIn, int meta ) {

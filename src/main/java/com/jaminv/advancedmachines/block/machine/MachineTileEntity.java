@@ -2,6 +2,8 @@ package com.jaminv.advancedmachines.block.machine;
 
 import java.util.Arrays;
 
+import com.jaminv.advancedmachines.block.BaseMachineTileEntity;
+
 import cofh.api.energy.IEnergyReceiver;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -22,7 +24,7 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.util.MathHelper;
 import net.minecraftforge.common.util.ForgeDirection;
 
-public class MachineTileEntity extends TileEntity implements IInventory, IUpdatePlayerListBox, IEnergyReceiver {
+public class MachineTileEntity extends BaseMachineTileEntity implements IUpdatePlayerListBox, IEnergyReceiver {
 	
 	public static final int RF_CAPACITY = 60000;
 	public static final int RF_MAX_RECEIVE = 200;
