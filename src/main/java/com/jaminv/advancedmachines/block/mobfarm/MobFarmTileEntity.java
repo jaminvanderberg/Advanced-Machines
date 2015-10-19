@@ -3,6 +3,7 @@ package com.jaminv.advancedmachines.block.mobfarm;
 import java.util.Arrays;
 
 import com.jaminv.advancedmachines.block.BaseMachineTileEntity;
+import com.jaminv.advancedmachines.item.ItemSoulCage;
 
 import cofh.api.energy.IEnergyReceiver;
 import net.minecraft.entity.player.EntityPlayer;
@@ -294,8 +295,10 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 			) <= MAXIMUM_DISTANCE_SQ;
 	}
 	
-	static public boolean isItemValidForFuelSlot( ItemStack itemstack ) {
-		return getItemBurnTime( itemstack ) > 0;
+	static public boolean isItemValidForSoulcage( ItemStack itemstack ) {
+		if ( ! ( itemstack.getItem() instanceof ItemSoulCage ) ) { return false; }
+		ItemSoulCage soulcage = (ItemSoulCage)itemstack.getItem();
+		return soulcage.containsSoul( itemstack );
 	}
 	
 	static public boolean isItemValidForInputSlot( ItemStack itemstack ) {

@@ -86,7 +86,7 @@ public class MobFarmBlock extends BaseMachineBlock {
 	@Override
 	public boolean onBlockActivated( World world, int posX, int posY, int posZ, EntityPlayer player, int side, float hitX, float hitY, float hitZ ) {
 		if ( ! world.isRemote ) {
-			player.openGui( AdvancedMachines.instance, AdvancedMachines.GUI_MACHINE, world, posX, posY, posZ );
+			player.openGui( AdvancedMachines.instance, AdvancedMachines.GUI_MOBFARM, world, posX, posY, posZ );
 		}
 		return true;
 	}

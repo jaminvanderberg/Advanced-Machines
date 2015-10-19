@@ -27,6 +27,7 @@ public class AdvancedMachines {
 	private static int modGuiIndex = 0;
 	
 	public static final int GUI_MACHINE = modGuiIndex++;
+	public static final int GUI_MOBFARM = modGuiIndex++;
 	
 	@EventHandler
 	public void preInit( FMLPreInitializationEvent e ) {

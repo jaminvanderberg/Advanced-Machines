@@ -1,5 +1,7 @@
 package com.jaminv.advancedmachines.block.mobfarm;
 
+import com.jaminv.advancedmachines.item.ItemSoulCage;
+
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import net.minecraft.entity.player.EntityPlayer;
@@ -30,19 +32,23 @@ public class MobFarmContainer extends Container {
 	private final int PLAYER_INVENTORY_SLOT_COUNT = PLAYER_INVENTORY_COLUMN_COUNT * PLAYER_INVENTORY_ROW_COUNT;
 	private final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + PLAYER_INVENTORY_SLOT_COUNT;
 	
-	public final int FUEL_SLOTS_COUNT = 4;
-	public final int INPUT_SLOTS_COUNT = 5;
-	public final int OUTPUT_SLOTS_COUNT = 5;
-	public final int FURNACE_SLOTS_COUNT = FUEL_SLOTS_COUNT + INPUT_SLOTS_COUNT + OUTPUT_SLOTS_COUNT;
+	public final int SOULCAGE_SLOTS_COUNT = 1;
+	public final int OUTPUT_SLOTS_ROW_COUNT = 4;
+	public final int OUTPUT_SLOTS_COLUMN_COUNT = 5;
+	public final int OUTPUT_SLOTS_COUNT = OUTPUT_SLOTS_ROW_COUNT * OUTPUT_SLOTS_COLUMN_COUNT;
+	public final int VOID_SLOTS_ROW_COUNT = 4;
+	public final int VOID_SLOTS_COLUMN_COUNT = 2;
+	public final int VOID_SLOTS_COUNT = VOID_SLOTS_ROW_COUNT * VOID_SLOTS_COLUMN_COUNT;
+	public final int MACHINE_SLOTS_COUNT = SOULCAGE_SLOTS_COUNT + OUTPUT_SLOTS_COUNT + VOID_SLOTS_COUNT;
 	
 	private final int FIRST_VANILLA_SLOT_INDEX = 0;
-	private final int FIRST_FUEL_SLOT_INDEX = FIRST_VANILLA_SLOT_INDEX + VANILLA_SLOT_COUNT;
-	private final int FIRST_INPUT_SLOT_INDEX = FIRST_FUEL_SLOT_INDEX + FUEL_SLOTS_COUNT;
-	private final int FIRST_OUTPUT_SLOT_INDEX =  FIRST_INPUT_SLOT_INDEX + INPUT_SLOTS_COUNT;
+	private final int FIRST_SOULCAGE_SLOT_INDEX = FIRST_VANILLA_SLOT_INDEX + VANILLA_SLOT_COUNT;
+	private final int FIRST_OUTPUT_SLOT_INDEX = FIRST_SOULCAGE_SLOT_INDEX + SOULCAGE_SLOTS_COUNT;
+	private final int FIRST_VOID_SLOT_INDEX =  FIRST_OUTPUT_SLOT_INDEX + OUTPUT_SLOTS_COUNT;
 	
-	private final int FIRST_FUEL_SLOT_NUMBER = 0;
-	private final int FIRST_INPUT_SLOT_NUMBER = FIRST_FUEL_SLOT_NUMBER + FUEL_SLOTS_COUNT;
-	private final int FIRST_OUTPUT_SLOT_NUMBER = FIRST_INPUT_SLOT_NUMBER + INPUT_SLOTS_COUNT;
+	private final int FIRST_SOULCAGE_SLOT_NUMBER = 0;
+	private final int FIRST_OUTPUT_SLOT_NUMBER = FIRST_SOULCAGE_SLOT_NUMBER + SOULCAGE_SLOTS_COUNT;
+	private final int FIRST_VOID_SLOT_NUMBER = FIRST_OUTPUT_SLOT_NUMBER + OUTPUT_SLOTS_COUNT;
 	
 	public MobFarmContainer(IInventory invPlayer, MobFarmTileEntity te) {
 		this.te = te;
@@ -50,7 +56,7 @@ public class MobFarmContainer extends Container {
 		final int SLOT_X_SPACING = 18;
 		final int SLOT_Y_SPACING = 18;
 		final int HOTBAR_XPOS = 8;
-		final int HOTBAR_YPOS = 183;
+		final int HOTBAR_YPOS = 189;
 		// Player hotbar
 		for ( int x = 0; x < HOTBAR_SLOT_COUNT; x++ ) {
 			int slotNumber = x;
@@ -58,7 +64,7 @@ public class MobFarmContainer extends Container {
 		}
 		
 		final int PLAYER_INVENTORY_XPOS = 8;
-		final int PLAYER_INVENTORY_YPOS = 125;
+		final int PLAYER_INVENTORY_YPOS = 131;
 		// Player inventory
 		for ( int y = 0; y < PLAYER_INVENTORY_ROW_COUNT; y++ ) {
 			for ( int x = 0; x < PLAYER_INVENTORY_COLUMN_COUNT; x++ ) {
@@ -69,28 +75,36 @@ public class MobFarmContainer extends Container {
 			}
 		}
 		
-		final int FUEL_SLOTS_XPOS = 53;
-		final int FUEL_SLOTS_YPOS = 96;
+		final int SOULCAGE_SLOTS_XPOS = 8;
+		final int SOULCAGE_SLOTS_YPOS = 19;
 		// Tile entity fuel slots
-		for ( int x = 0; x < FUEL_SLOTS_COUNT; x++ ) {
-			int slotNumber = x + FIRST_FUEL_SLOT_NUMBER;
-			this.addSlotToContainer( new SlotFuel( te, slotNumber, FUEL_SLOTS_XPOS + SLOT_X_SPACING * x, FUEL_SLOTS_YPOS ) );
+		for ( int x = 0; x < SOULCAGE_SLOTS_COUNT; x++ ) {
+			int slotNumber = x + FIRST_SOULCAGE_SLOT_NUMBER;
+			this.addSlotToContainer( new SlotSoulcage( te, slotNumber, SOULCAGE_SLOTS_XPOS + SLOT_X_SPACING * x, SOULCAGE_SLOTS_YPOS ) );
 		}
 		
-		final int INPUT_SLOTS_XPOS = 26;
-		final int INPUT_SLOTS_YPOS = 24;
+		final int OUTPUT_SLOTS_XPOS = 35;
+		final int OUTPUT_SLOTS_YPOS = 48;
 		// Tile entity input slots
-		for ( int y = 0; y < INPUT_SLOTS_COUNT; y++ ) {
-			int slotNumber = y + FIRST_INPUT_SLOT_NUMBER;
-			this.addSlotToContainer( new SlotSmeltableInput( te, slotNumber, INPUT_SLOTS_XPOS, INPUT_SLOTS_YPOS + SLOT_Y_SPACING * y ) );	
+		for ( int y = 0; y < OUTPUT_SLOTS_ROW_COUNT; y++ ) {
+			for ( int x = 0; x < OUTPUT_SLOTS_COLUMN_COUNT; x++ ) {
+				int xPos = OUTPUT_SLOTS_XPOS + x * SLOT_X_SPACING;
+				int yPos = OUTPUT_SLOTS_YPOS + y * SLOT_Y_SPACING;				
+				int slotNumber = FIRST_OUTPUT_SLOT_NUMBER + y * OUTPUT_SLOTS_COLUMN_COUNT + x;
+				this.addSlotToContainer( new SlotOutput( te, slotNumber, xPos, yPos ) );
+			}
 		}
 		
-		final int OUTPUT_SLOTS_XPOS = 134;
-		final int OUTPUT_SLOTS_YPOS = 24;
+		final int VOID_SLOTS_XPOS = 134;
+		final int VOID_SLOTS_YPOS = 48;
 		// Tile entity output slots
-		for ( int y = 0; y < OUTPUT_SLOTS_COUNT; y++ ) {
-			int slotNumber = y + FIRST_OUTPUT_SLOT_NUMBER;
-			this.addSlotToContainer( new SlotOutput( te, slotNumber, OUTPUT_SLOTS_XPOS, OUTPUT_SLOTS_YPOS + SLOT_Y_SPACING * y ) );	
+		for ( int y = 0; y < VOID_SLOTS_ROW_COUNT; y++ ) {
+			for ( int x = 0; x < VOID_SLOTS_COLUMN_COUNT; x++ ) {
+				int slotNumber = FIRST_VOID_SLOT_NUMBER + y * VOID_SLOTS_COLUMN_COUNT + x;
+				int xPos = VOID_SLOTS_XPOS + x * SLOT_X_SPACING;
+				int yPos = VOID_SLOTS_YPOS + y * SLOT_Y_SPACING;				
+				this.addSlotToContainer( new SlotVoidItem( te, slotNumber, xPos, yPos ) );
+			}
 		}
 	}
 
@@ -109,19 +123,23 @@ public class MobFarmContainer extends Container {
 		ItemStack stackCopy = stack.copy();
 		
 		if ( fromSlot >= FIRST_VANILLA_SLOT_INDEX && fromSlot < FIRST_VANILLA_SLOT_INDEX + VANILLA_SLOT_COUNT ) {
-			// Merge from player inventory into tile entity
-			if ( te.getSmeltingResultForItem( stack ) != null ) {
-				if ( ! this.mergeItemStack( stack, FIRST_INPUT_SLOT_INDEX, FIRST_INPUT_SLOT_INDEX + INPUT_SLOTS_COUNT, false ) ) {
-					return null;
+			if ( te.isItemValidForSoulcage( stack ) ) { 
+				boolean empty = false;
+				for ( int i = FIRST_SOULCAGE_SLOT_INDEX; i < FIRST_SOULCAGE_SLOT_INDEX + SOULCAGE_SLOTS_COUNT; i++ ) {
+					if ( ! ( (Slot)this.inventorySlots.get( i ) ).getHasStack() ) {
+						empty = true;
+						break;
+					}
 				}
-			} else if ( te.getItemBurnTime( stack ) > 0 ) {
-				if ( ! this.mergeItemStack( stack, FIRST_FUEL_SLOT_INDEX, FIRST_FUEL_SLOT_INDEX + FUEL_SLOTS_COUNT, true ) ) {
+				if ( ! empty ) { return null; }
+	
+				if ( ! this.mergeItemStack( stack,  FIRST_SOULCAGE_SLOT_INDEX, FIRST_SOULCAGE_SLOT_INDEX + SOULCAGE_SLOTS_COUNT, false ) ) {
 					return null;
 				}
 			} else {
 				return null;
 			}
-		} else if ( fromSlot >= FIRST_FUEL_SLOT_INDEX && fromSlot < FIRST_FUEL_SLOT_INDEX + FURNACE_SLOTS_COUNT ) {
+		} else if ( fromSlot >= FIRST_SOULCAGE_SLOT_INDEX && fromSlot < FIRST_OUTPUT_SLOT_INDEX + OUTPUT_SLOTS_COUNT ) {
 			if ( ! this.mergeItemStack( stack, FIRST_VANILLA_SLOT_INDEX, FIRST_VANILLA_SLOT_INDEX + VANILLA_SLOT_COUNT, false ) ) {
 				return null;
 			}
@@ -138,6 +156,8 @@ public class MobFarmContainer extends Container {
 		slot.onPickupFromSlot( playerIn, stack );
 		return stackCopy;
 	}
+	
+	
 
 	@Override
 	public void detectAndSendChanges() {
@@ -172,28 +192,17 @@ public class MobFarmContainer extends Container {
 		te.setField( id, data );
 	}
 
-	public class SlotFuel extends Slot {
-		public SlotFuel( IInventory inventoryIn, int index, int xPos, int yPos ) {
+	public class SlotSoulcage extends Slot {
+		public SlotSoulcage( IInventory inventoryIn, int index, int xPos, int yPos ) {
 			super( inventoryIn, index, xPos, yPos );
 		}
 		
 		@Override
 		public boolean isItemValid( ItemStack stack ) {
-			return te.isItemValidForFuelSlot( stack );
+			return te.isItemValidForSoulcage( stack );
 		}
 	}
 	
-	public class SlotSmeltableInput extends Slot {
-		public SlotSmeltableInput( IInventory inventoryIn, int index, int xPos, int yPos ) {
-			super( inventoryIn, index, xPos, yPos );
-		}
-		
-		@Override
-		public boolean isItemValid( ItemStack stack ) {
-			return te.isItemValidForInputSlot( stack );
-		}
-	}
-
 	public class SlotOutput extends Slot {
 		public SlotOutput( IInventory inventoryIn, int index, int xPos, int yPos ) {
 			super( inventoryIn, index, xPos, yPos );
@@ -204,5 +213,16 @@ public class MobFarmContainer extends Container {
 			return te.isItemValidForOutputSlot( stack );
 		}
 	}
+
+	public class SlotVoidItem extends Slot {
+		public SlotVoidItem( IInventory inventoryIn, int index, int xPos, int yPos ) {
+			super( inventoryIn, index, xPos, yPos );
+		}
+		
+		@Override
+		public boolean isItemValid( ItemStack stack ) {
+			return true;
+		}
+	}	
 	
 }
