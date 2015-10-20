@@ -121,7 +121,21 @@ public class ItemSoulCage extends Item {
 		}
 	}
 	
+	public Entity getSoulEntity( ItemStack item, World world ) {
+		if ( ! this.containsSoul( item ) ) { return null; }
 
+		Entity mob;
+		NBTTagCompound root = item.stackTagCompound;
+		if ( root.hasKey( "isStub" ) ) {
+			String entityId = root.getString( "id" );
+			mob = EntityList.createEntityByName( entityId,  world );
+		} else {
+			mob = EntityList.createEntityFromNBT( root, world );
+		}
+		mob.readFromNBT( root );
+		
+		return mob;
+	}
 
 	@Override
 	public boolean onItemUse( ItemStack item, EntityPlayer player, World world, 
@@ -137,18 +151,7 @@ public class ItemSoulCage extends Item {
 			return false;
 		}
 		
-		Entity mob;
-		NBTTagCompound root = item.stackTagCompound;
-		if ( root.hasKey( "isStub" ) ) {
-			String entityId = root.getString( "id" );
-			mob = EntityList.createEntityByName( entityId,  world );
-		} else {
-			mob = EntityList.createEntityFromNBT( root, world );
-		}
-		if ( mob == null ) {
-			return true;
-		}
-		mob.readFromNBT( root );
+		Entity mob = this.getSoulEntity( item, world );
 		
 		Block blk = world.getBlock( x, y, z );
 		double spawnX = x + Facing.offsetsXForSide[side] + 0.5;
@@ -252,6 +255,12 @@ public class ItemSoulCage extends Item {
 			return true;
 		}
 		return false;
+	}
+	
+	public String getSoulEntityName( ItemStack item ) {
+		String mobname = getMobType( item );
+		if ( mobname == null ) { return null; }
+		return StatCollector.translateToLocal( "entity." + mobname + ".name" );		
 	}
 
 	@Override

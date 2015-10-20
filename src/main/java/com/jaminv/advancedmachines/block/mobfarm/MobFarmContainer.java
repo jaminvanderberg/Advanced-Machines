@@ -17,6 +17,7 @@ public class MobFarmContainer extends Container {
 	private MobFarmTileEntity te;
 	
 	private int[] cachedFields;	
+	//private String[] cachedNames;
 	
 	/*
 	 * SLOTS:

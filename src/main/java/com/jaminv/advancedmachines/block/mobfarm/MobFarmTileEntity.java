@@ -6,6 +6,8 @@ import com.jaminv.advancedmachines.block.BaseMachineTileEntity;
 import com.jaminv.advancedmachines.item.ItemSoulCage;
 
 import cofh.api.energy.IEnergyReceiver;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
@@ -28,64 +30,35 @@ import net.minecraftforge.common.util.ForgeDirection;
 public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdatePlayerListBox, IEnergyReceiver {
 	
 	public static final int RF_CAPACITY = 60000;
-	public static final int RF_MAX_RECEIVE = 200;
+	public static final int RF_MAX_RECEIVE = 5;
 	
-	public static final int FUEL_SLOTS_COUNT = 4;
-	public static final int INPUT_SLOTS_COUNT = 5;
-	public static final int OUTPUT_SLOTS_COUNT = 5;
-	public static final int TOTAL_SLOTS_COUNT = FUEL_SLOTS_COUNT + INPUT_SLOTS_COUNT + OUTPUT_SLOTS_COUNT;
+	public static final int SOULCAGE_SLOTS_COUNT = 1;
+	public static final int OUTPUT_SLOTS_COUNT = 20;
+	public static final int VOID_SLOTS_COUNT = 8;
+	public static final int TOTAL_SLOTS_COUNT = SOULCAGE_SLOTS_COUNT + OUTPUT_SLOTS_COUNT + VOID_SLOTS_COUNT;
 	
-	public static final int FIRST_FUEL_SLOT = 0;
-	public static final int FIRST_INPUT_SLOT = FIRST_FUEL_SLOT + FUEL_SLOTS_COUNT;
-	public static final int FIRST_OUTPUT_SLOT = FIRST_INPUT_SLOT + INPUT_SLOTS_COUNT;
+	public static final int FIRST_SOULCAGE_SLOT = 0;
+	public static final int FIRST_OUTPUT_SLOT = FIRST_SOULCAGE_SLOT + SOULCAGE_SLOTS_COUNT;
+	public static final int FIRST_VOID_SLOT = FIRST_OUTPUT_SLOT + OUTPUT_SLOTS_COUNT;
 
 	private ItemStack[] itemStacks = new ItemStack[TOTAL_SLOTS_COUNT];
 	private String customName;
 	
-	private int[] burnTimeRemaining = new int[FUEL_SLOTS_COUNT];
-	private int[] burnTimeInitialValue = new int[FUEL_SLOTS_COUNT];
+	private int[] hpRemaining = new int[SOULCAGE_SLOTS_COUNT];
+	private int[] maxHp = new int[SOULCAGE_SLOTS_COUNT];
+	private int[] mobCount = new int[SOULCAGE_SLOTS_COUNT];
+	private String[] mobName = new String[SOULCAGE_SLOTS_COUNT];
 	
-	private short cookTime;
-	private static final short COOK_TIME_FOR_COMPLETION = 200;
-	
-	private int cachedNumberOfBurningSlots = -1;
-	
-	private int energy = 0;
-	
-	public double fractionOfFuelRemaining( int fuelSlot ) {
-		if ( burnTimeInitialValue[fuelSlot] <= 0 ) { return 0; }
-		double fraction = burnTimeRemaining[fuelSlot] / (double)burnTimeInitialValue[fuelSlot];
-		return MathHelper.clamp_double( fraction, 0.0, 1.0 );
-	}
-	
-	public int secondsOfFuelRemaining( int fuelSlot ) {
-		if ( burnTimeRemaining[fuelSlot] <= 0 ) { return 0; }
-		return burnTimeRemaining[fuelSlot] / 20;
-	}
-	
-	/**
-	 * Number of slots which have fuel burning in them.
-	 * @return int
-	 */
-	public int numberOfBurningFuelSlots() {
-		int burningCount = 0;
-		for ( int burnTime : burnTimeRemaining ) {
-			if ( burnTime > 0 ) { burningCount++; }
-		}
-		return burningCount;
-	}
-	
-	/**
-	 * Returns the amount of cook time completed on the currently cooking item
-	 * @return double fraction remaining, 0.0-1.0
-	 */
-	public double fractionOfCookTimeComplete() {
-		double fraction = cookTime / (double)COOK_TIME_FOR_COMPLETION;
-		return MathHelper.clamp_double( fraction, 0.0, 1.0 );
-	}
+	private boolean hasSoul = false;
+	private int wait = 20;
+	private int energy = 0;	
+		
+	/* Upgrade Settings */
+	private int speed = 1;
+	private int count = 1;
+	private int rfconsume = 200;
+	private int loot = 0;
 
-
-	
 	@Override
 	public void updateEntity() {
 		this.update();
@@ -94,129 +67,76 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 
 	@Override
 	public void update() {
-		if ( canSmelt() ) {
-			int numberOfFuelBurning = burnFuel();
-			
-			if ( numberOfFuelBurning > 0 ) {
-				cookTime += numberOfFuelBurning;
-			} else {
-				cookTime -= 2;
-			}
-			
-			if ( cookTime < 0 ) cookTime = 0;
-			
-			if ( cookTime >= COOK_TIME_FOR_COMPLETION ) {
-				smeltItem();
-				cookTime = 0;
-			}
-		} else {
-			cookTime = 0;
-		}
-	}
-	
-	private int burnFuel() {
-		int burningCount = 0;
-		boolean inventoryChanged = false;
-		
-		for ( int i = 0; i < FUEL_SLOTS_COUNT; i++ ) {
-			int fuelSlotNumber = i + FIRST_FUEL_SLOT;
-			if ( burnTimeRemaining[i] > 0 ) {
-				burnTimeRemaining[i]--;
-				burningCount+=10;
-			}
-			if ( burnTimeRemaining[i] == 0 ) {
-				if ( itemStacks[fuelSlotNumber] != null && getItemBurnTime( itemStacks[fuelSlotNumber] ) > 0) {
-					burnTimeRemaining[i] = burnTimeInitialValue[i] = getItemBurnTime( itemStacks[fuelSlotNumber] );
-					itemStacks[fuelSlotNumber].stackSize--;
-					burningCount++;
-					inventoryChanged = true;
-					
-					if ( itemStacks[fuelSlotNumber].stackSize == 0 ) {
-						itemStacks[fuelSlotNumber] = itemStacks[fuelSlotNumber].getItem().getContainerItem( itemStacks[fuelSlotNumber] );
-					}
-				}
-			}
-		}
-		
-		if ( inventoryChanged ) { markDirty(); }
-		return burningCount;		
-	}
-	
-	/**
-	 * Check if any of the input items are smeltable and there is sufficient space in the output slots
-	 * @return true if smelting is possible
-	 */
-	private boolean canSmelt() { return smeltItem( false ); }
-	
-	/**
-	 * Smelt an input item into an output slot, if possible
-	 */
-	private void smeltItem() { smeltItem( true ); }
-	
-	/**
-	 * 
-	 * @return
-	 */
-	private boolean smeltItem( boolean performSmelt ) {
-		Integer firstSuitableInputSlot = null;
-		Integer firstSuitableOutputSlot = null;
-		ItemStack result = null;
-		
-		for ( int inputSlot = FIRST_INPUT_SLOT; inputSlot < FIRST_INPUT_SLOT + INPUT_SLOTS_COUNT; inputSlot++ ) {
-			if ( itemStacks[inputSlot] != null ) {
-				result = getSmeltingResultForItem( itemStacks[inputSlot] );
-				if ( result != null ) {
-					for ( int outputSlot = FIRST_OUTPUT_SLOT; outputSlot < FIRST_OUTPUT_SLOT + OUTPUT_SLOTS_COUNT; outputSlot++ ) {
-						ItemStack outputStack = itemStacks[outputSlot];
-						if ( outputStack == null ) {
-							firstSuitableInputSlot = inputSlot;
-							firstSuitableOutputSlot = outputSlot;
-							break;
-						}
-						
-						if ( outputStack.getItem() == result.getItem() 
-							&& ( ! outputStack.getHasSubtypes() || outputStack.getItemDamage() == result.getItemDamage() )
-							&& ItemStack.areItemStackTagsEqual( outputStack, result )
-						) {
-							int combinedSize = itemStacks[outputSlot].stackSize + result.stackSize;
-							if ( combinedSize <= getInventoryStackLimit() && combinedSize <= itemStacks[outputSlot].getMaxStackSize() ) {
-								firstSuitableInputSlot = inputSlot;
-								firstSuitableOutputSlot = outputSlot;
-								break;
-							}
-						}
-					}
-					if ( firstSuitableInputSlot != null ) { break; }
-				}
-			}
-		}
-		
-		if ( firstSuitableInputSlot == null ) { return false; }
-		if ( ! performSmelt ) { return true; }
-		
-		itemStacks[firstSuitableInputSlot].stackSize--;
-		if ( itemStacks[firstSuitableInputSlot].stackSize <= 0 ) { itemStacks[firstSuitableInputSlot] = null; }
-		if ( itemStacks[firstSuitableOutputSlot] == null ) {
-			itemStacks[firstSuitableOutputSlot] = result.copy();
-		} else {
-			itemStacks[firstSuitableOutputSlot].stackSize += result.stackSize;
-		}
-		markDirty();
-		return true;
-	}
-	
-	/**
-	 * Returns the smelting result for the given stack.  Returns null if the given stack can not be smelted..
-	 * @return ItemStack
-	 */
-	public static ItemStack getSmeltingResultForItem( ItemStack stack ) {
-		return FurnaceRecipes.smelting().getSmeltingResult( stack );
-	}
+		//System.out.println( "hasSoul: " + hasSoul );
+		if ( ! hasSoul ) { return; }
+		//System.out.println( "hasSoul!" );
+		wait--;
+		if ( wait <= 0 ) {
+			for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+				if ( maxHp[i] < 0 ) { continue; }
 
-	public static short getItemBurnTime( ItemStack stack ) {
-		int burntime = TileEntityFurnace.getItemBurnTime( stack );
-		return (short)MathHelper.clamp_int( burntime, 0, Short.MAX_VALUE );
+				if ( hpRemaining[i] <= 0 ) {
+					killMob( i );
+				} else {
+					if ( energy >= mobCount[i] * rfconsume ) {
+						hpRemaining[i] -= speed;
+						energy -= mobCount[i];
+					}
+				}
+			}
+			
+			wait = 20;
+		}
 	}
+	
+	private void killMob( int id ) {
+		// TODO: Add mob drops
+		
+		if ( energy >= maxHp[id] * count * rfconsume ) {
+			hpRemaining[id] = maxHp[id];
+			mobCount[id] = count;
+			energy -= maxHp[id] * count * rfconsume;
+		}
+	}
+	
+	private void updateSoul( int id ) {
+		if ( id < FIRST_SOULCAGE_SLOT || id >= FIRST_SOULCAGE_SLOT + SOULCAGE_SLOTS_COUNT ) {
+			return;
+		}
+		id -= FIRST_SOULCAGE_SLOT;
+		
+		ItemStack itemstack = this.itemStacks[id];
+		this.maxHp[id] = 0;
+		if ( itemstack != null ) {
+			if ( itemstack.getItem() instanceof ItemSoulCage ) {
+				ItemSoulCage soulcage = (ItemSoulCage)itemstack.getItem();
+				Entity mob = soulcage.getSoulEntity( itemstack, this.getWorldObj() );
+				
+				if ( mob instanceof EntityLivingBase ) {
+					this.maxHp[id] = (int)((EntityLivingBase)mob).getMaxHealth();
+					this.mobName[id] = soulcage.getSoulEntityName( itemstack );
+					
+					//System.out.println( "MaxHP: " + this.maxHp[id] + ", MobName: " + this.mobName[id] );
+				}
+			}
+		}
+		this.hpRemaining[id] = this.maxHp[id];
+		
+		this.hasSoul = false;
+		for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+			if ( maxHp[i] > 0 ) { this.hasSoul = true; return; }
+		}
+	}
+	
+	public double fractionOfHpRemaining( int id ) {
+		System.out.println( "HP: " + hpRemaining[id] + ", Max: " + maxHp[id] );
+		double fraction = hpRemaining[id] / (double)maxHp[id];
+		return MathHelper.clamp_double( fraction, 0.0, 1.0 );
+	}	
+	
+// =========== //
+//  Inventory  //
+// =========== //
 	
 	/**
 	 * Gets the number of slots in the inventory
@@ -254,6 +174,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 				this.setInventorySlotContents( index, null );
 			}
 		}
+		
 		markDirty();
 		return itemstackRemoved;
 	}
@@ -271,8 +192,10 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		if ( stack != null && stack.stackSize == 0 ) {
 			stack = null;
 		}
-		
+
 		this.itemStacks[index] = stack;
+		
+		this.updateSoul( index );
 		this.markDirty();
 	}
 	
@@ -301,9 +224,9 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		return soulcage.containsSoul( itemstack );
 	}
 	
-	static public boolean isItemValidForInputSlot( ItemStack itemstack ) {
-		return getSmeltingResultForItem( itemstack ) != null;
-	}
+	//static public boolean isItemValidForInputSlot( ItemStack itemstack ) {
+	//	return getSmeltingResultForItem( itemstack ) != null;
+	//}
 	
 	static public boolean isItemValidForOutputSlot( ItemStack itemstack ) {
 		return false;
@@ -324,11 +247,18 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		}
 		nbt.setTag( "Items", list );
 		
-		nbt.setShort( "cookTime", cookTime );
-		nbt.setTag( "burnTimeRemaining", new NBTTagIntArray( burnTimeRemaining ) );
-		nbt.setTag( "burnTimeInitial", new NBTTagIntArray( burnTimeInitialValue ) );
+		nbt.setTag( "hpRemaining", new NBTTagIntArray( this.hpRemaining ) );
+		nbt.setTag( "maxHp", new NBTTagIntArray( this.maxHp ) );
+		nbt.setTag( "mobCount", new NBTTagIntArray( this.mobCount ) );
 		
+		nbt.setBoolean( "hasSoul", this.hasSoul );
+		nbt.setInteger( "wait", this.wait );
 		nbt.setInteger( "energy", this.energy );
+		
+		nbt.setInteger( "speed", this.speed );
+		nbt.setInteger( "count", this.count );
+		nbt.setInteger( "rfconsume", this.rfconsume );
+		nbt.setInteger( "loot", this.loot );
 	}
 	
 	@Override
@@ -342,12 +272,18 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 			this.setInventorySlotContents( slot, ItemStack.loadItemStackFromNBT( stackTag ) );
 		}
 		
-		cookTime = nbt.getShort( "cookTime" );
-		burnTimeRemaining = Arrays.copyOf( nbt.getIntArray( "burnTimeRemaining" ), FUEL_SLOTS_COUNT );
-		burnTimeInitialValue = Arrays.copyOf( nbt.getIntArray( "burnTimeInitial" ), FUEL_SLOTS_COUNT );
-		cachedNumberOfBurningSlots = -1;
+		this.hpRemaining = Arrays.copyOf( nbt.getIntArray( "hpRemaining" ), SOULCAGE_SLOTS_COUNT );
+		this.maxHp = Arrays.copyOf( nbt.getIntArray( "maxHp" ), SOULCAGE_SLOTS_COUNT );
+		this.mobCount = Arrays.copyOf( nbt.getIntArray( "mobCount" ), SOULCAGE_SLOTS_COUNT );
 		
-		energy = nbt.getInteger( "energy" );
+		this.hasSoul = nbt.getBoolean( "hasSoul" );
+		this.wait = nbt.getInteger( "wait" );
+		this.energy = nbt.getInteger( "energy" );
+		
+		this.speed = nbt.getInteger( "speed" );
+		this.count = nbt.getInteger( "count" );
+		this.rfconsume = nbt.getInteger( "rfconsume" );
+		this.loot = nbt.getInteger( "loot" );
 	}
 	
 	@Override
@@ -383,19 +319,13 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 //  Fields  //
 // ======== //
 	
-	private static final byte COOK_FIELD_ID = 0;
-	private static final byte FIRST_BURN_TIME_REMAINING_FIELD_ID = 1;
-	private static final byte FIRST_BURN_TIME_INITIAL_FIELD_ID = FIRST_BURN_TIME_REMAINING_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
-	private static final byte ENERGY_FIELD_ID = FIRST_BURN_TIME_INITIAL_FIELD_ID + (byte)FUEL_SLOTS_COUNT;
+	private static final byte FIRST_HP_FIELD_ID = 0;
+	private static final byte ENERGY_FIELD_ID = FIRST_HP_FIELD_ID + (byte)SOULCAGE_SLOTS_COUNT;
 	private static final byte NUMBER_OF_FIELDS = ENERGY_FIELD_ID + 1;
 	
 	public int getField( int id ) {
-		if ( id == COOK_FIELD_ID ) { return cookTime; }
-		if ( id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT ) {
-			return burnTimeRemaining[id - FIRST_BURN_TIME_REMAINING_FIELD_ID];
-		}
-		if ( id >= FIRST_BURN_TIME_INITIAL_FIELD_ID && id < FIRST_BURN_TIME_INITIAL_FIELD_ID + FUEL_SLOTS_COUNT ) {
-			return burnTimeInitialValue[id - FIRST_BURN_TIME_INITIAL_FIELD_ID];
+		if ( id >= FIRST_HP_FIELD_ID && id < FIRST_HP_FIELD_ID + SOULCAGE_SLOTS_COUNT ) {
+			return hpRemaining[id - FIRST_HP_FIELD_ID];
 		}
 		if ( id == ENERGY_FIELD_ID ) {
 			return energy;
@@ -405,14 +335,9 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	}
 	
 	public void setField( int id, int value ) {
-		if ( id == COOK_FIELD_ID ) { 
-			cookTime = (short)value; 
-		} else if ( id >= FIRST_BURN_TIME_REMAINING_FIELD_ID && id < FIRST_BURN_TIME_REMAINING_FIELD_ID + FUEL_SLOTS_COUNT ) {
-			burnTimeRemaining[id - FIRST_BURN_TIME_REMAINING_FIELD_ID] = value;
-		} else if ( id >= FIRST_BURN_TIME_INITIAL_FIELD_ID && id < FIRST_BURN_TIME_INITIAL_FIELD_ID + FUEL_SLOTS_COUNT ) {
-			burnTimeInitialValue[id - FIRST_BURN_TIME_INITIAL_FIELD_ID] = value;
+		if ( id >= FIRST_HP_FIELD_ID && id < FIRST_HP_FIELD_ID + SOULCAGE_SLOTS_COUNT ) {
+			hpRemaining[id - FIRST_HP_FIELD_ID] = value;
 		} else if ( id == ENERGY_FIELD_ID ) {
-			System.out.println( value );
 			energy = value;
 		} else {
 			System.err.println( "Invalid field ID in MachineTileEntity.setField: " + id );
@@ -422,6 +347,18 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	public int getFieldCount() {
 		return NUMBER_OF_FIELDS;
 	}
+	
+	private static final byte FIRST_MOB_NAME = 0;
+	private static final byte NUMBER_OF_MOB_NAMES = FIRST_MOB_NAME + SOULCAGE_SLOTS_COUNT;
+	
+	public String getMobName( int id ) {
+		return mobName[id];
+	}
+	public void setMobName( int id, String value ) {
+		this.mobName[id] = value;
+	}
+	
+	public int getMobNameCount() { return NUMBER_OF_MOB_NAMES; }
 	
 // ===================== //
 //  Unused but required  //

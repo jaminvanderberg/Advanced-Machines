@@ -78,7 +78,7 @@ public abstract class BaseMachineBlock extends BlockContainer {
 		if ( te instanceof BaseMachineTileEntity ) {
 			facing = ((BaseMachineTileEntity)te).getFacing();
 		}
-		System.out.println( "Facing: " + facing + ", Side: " + side );
+		//System.out.println( "Facing: " + facing + ", Side: " + side );
 		
 		if ( side == facing ) {
 			return this.getFace( world.getBlockMetadata( x, y,  z ) );

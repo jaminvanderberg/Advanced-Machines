@@ -34,6 +34,7 @@ public class MobFarmGui extends BaseGuiContainer {
 	final int HP_BAR_ICON_V = 213;
 	final int HP_BAR_WIDTH = 140;
 	final int HP_BAR_HEIGHT = 5;
+	final int HP_BAR_Y_SPACING = 18;
 	
 	final int ENERGY_XPOS = 9;
 	final int ENERGY_YPOS = 49;
@@ -47,15 +48,18 @@ public class MobFarmGui extends BaseGuiContainer {
 		Minecraft.getMinecraft().getTextureManager().bindTexture( texture );
 		this.drawTexturedModalRect( this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize );
 		
-		//double cookProgress = te.fractionOfCookTimeComplete();
-		//this.drawTexturedModalRect(
-		//	this.guiLeft + COOK_BAR_XPOS,
-		//	this.guiTop + COOK_BAR_YPOS,
-		//	COOK_BAR_ICON_U,
-		//	COOK_BAR_ICON_V,
-		//	(int)(cookProgress * COOK_BAR_WIDTH),
-		//	COOK_BAR_HEIGHT
-		//);
+		for ( int i = 0; i < te.SOULCAGE_SLOTS_COUNT; i++ ) {
+			double hpRemaining = te.fractionOfHpRemaining( i );
+			int width = (int)( hpRemaining * HP_BAR_WIDTH );
+			this.drawTexturedModalRect(
+				this.guiLeft + HP_BAR_XPOS,
+				this.guiTop + HP_BAR_YPOS,
+				HP_BAR_ICON_U,
+				HP_BAR_ICON_V,
+				width,
+				HP_BAR_HEIGHT
+			);
+		}
 		
 		double energy = te.getEnergyPercent();
 		int yOffset = (int)( ( 1.0 - energy ) * ENERGY_HEIGHT );
