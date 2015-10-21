@@ -1,9 +1,12 @@
 package com.jaminv.advancedmachines.block.mobfarm;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.jaminv.advancedmachines.block.BaseMachineTileEntity;
 import com.jaminv.advancedmachines.item.ItemSoulCage;
+import com.jaminv.advancedmachines.mobregistry.MobEntry;
+import com.jaminv.advancedmachines.mobregistry.MobRegistry;
 
 import cofh.api.energy.IEnergyReceiver;
 import net.minecraft.entity.Entity;
@@ -47,6 +50,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	private int[] hpRemaining = new int[SOULCAGE_SLOTS_COUNT];
 	private int[] maxHp = new int[SOULCAGE_SLOTS_COUNT];
 	private int[] mobCount = new int[SOULCAGE_SLOTS_COUNT];
+	private String[] entityId = new String[SOULCAGE_SLOTS_COUNT];
 	private String[] mobName = new String[SOULCAGE_SLOTS_COUNT];
 	
 	private boolean hasSoul = false;
@@ -56,8 +60,11 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	/* Upgrade Settings */
 	private int speed = 1;
 	private int count = 1;
-	private int rfconsume = 200;
+	private int rfconsume = 400;
 	private int loot = 0;
+	
+	@Override
+	public boolean isActive() { return hasSoul; }
 
 	@Override
 	public void updateEntity() {
@@ -67,9 +74,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 
 	@Override
 	public void update() {
-		//System.out.println( "hasSoul: " + hasSoul );
 		if ( ! hasSoul ) { return; }
-		//System.out.println( "hasSoul!" );
 		wait--;
 		if ( wait <= 0 ) {
 			for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
@@ -80,7 +85,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 				} else {
 					if ( energy >= mobCount[i] * rfconsume ) {
 						hpRemaining[i] -= speed;
-						energy -= mobCount[i];
+						energy -= mobCount[i] * rfconsume;
 					}
 				}
 			}
@@ -90,7 +95,37 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	}
 	
 	private void killMob( int id ) {
-		// TODO: Add mob drops
+		ArrayList<ItemStack> drop = new ArrayList<ItemStack>();
+		ArrayList<MobEntry> mobentry = MobRegistry.getMobEntryList( this.entityId[id] );
+		if ( mobentry != null ) {
+			for( int i = 0; i < mobentry.size(); i++ ) {
+				drop.addAll( mobentry.get(i).getDrops( this.mobCount[id], this.loot, false ) );
+			}
+			
+			for( ItemStack item : drop ) {
+				for ( int outputSlot = FIRST_OUTPUT_SLOT; outputSlot < FIRST_OUTPUT_SLOT + OUTPUT_SLOTS_COUNT; outputSlot++ ) {
+					ItemStack outputStack = itemStacks[outputSlot];
+					if ( outputStack == null ) {
+						int put = Math.min( item.stackSize, item.getMaxStackSize() );
+						outputStack = new ItemStack( item.getItem(), put );
+						item.stackSize -= put;
+						if ( item.stackSize <= 0 ) { break; }
+						continue;
+					}
+					
+					if ( outputStack.getItem() == item.getItem() 
+						&& ( ! outputStack.getHasSubtypes() || outputStack.getItemDamage() == item.getItemDamage() )
+						&& ItemStack.areItemStackTagsEqual( outputStack, item )
+					) {
+						int put = Math.min( item.stackSize, outputStack.getMaxStackSize() );
+						outputStack.stackSize += put;
+						item.stackSize -= put;
+						if ( item.stackSize <= 0 ) { break; }
+						continue;					
+					}
+				}
+			}
+		}
 		
 		if ( energy >= maxHp[id] * count * rfconsume ) {
 			hpRemaining[id] = maxHp[id];
@@ -115,12 +150,10 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 				if ( mob instanceof EntityLivingBase ) {
 					this.maxHp[id] = (int)((EntityLivingBase)mob).getMaxHealth();
 					this.mobName[id] = soulcage.getSoulEntityName( itemstack );
-					
-					//System.out.println( "MaxHP: " + this.maxHp[id] + ", MobName: " + this.mobName[id] );
 				}
 			}
 		}
-		this.hpRemaining[id] = this.maxHp[id];
+		if ( this.maxHp[id] <= 0 ) { this.hpRemaining[id] = 0; }
 		
 		this.hasSoul = false;
 		for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
@@ -128,11 +161,12 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		}
 	}
 	
-	public double fractionOfHpRemaining( int id ) {
-		System.out.println( "HP: " + hpRemaining[id] + ", Max: " + maxHp[id] );
+	public int getHp( int id ) { return this.hpRemaining[id]; }
+	public int getMaxHp( int id ) { return this.maxHp[id]; }
+	public double getHpPercent( int id ) {
 		double fraction = hpRemaining[id] / (double)maxHp[id];
 		return MathHelper.clamp_double( fraction, 0.0, 1.0 );
-	}	
+	}
 	
 // =========== //
 //  Inventory  //
@@ -221,7 +255,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	static public boolean isItemValidForSoulcage( ItemStack itemstack ) {
 		if ( ! ( itemstack.getItem() instanceof ItemSoulCage ) ) { return false; }
 		ItemSoulCage soulcage = (ItemSoulCage)itemstack.getItem();
-		return soulcage.containsSoul( itemstack );
+		return soulcage.hasSoul( itemstack );
 	}
 	
 	//static public boolean isItemValidForInputSlot( ItemStack itemstack ) {
@@ -250,6 +284,11 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		nbt.setTag( "hpRemaining", new NBTTagIntArray( this.hpRemaining ) );
 		nbt.setTag( "maxHp", new NBTTagIntArray( this.maxHp ) );
 		nbt.setTag( "mobCount", new NBTTagIntArray( this.mobCount ) );
+
+		for ( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+			nbt.setString( "mobName" + i, this.mobName[i] );
+			nbt.setString( "entityId" + i, this.entityId[i] );
+		}
 		
 		nbt.setBoolean( "hasSoul", this.hasSoul );
 		nbt.setInteger( "wait", this.wait );
@@ -275,6 +314,11 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		this.hpRemaining = Arrays.copyOf( nbt.getIntArray( "hpRemaining" ), SOULCAGE_SLOTS_COUNT );
 		this.maxHp = Arrays.copyOf( nbt.getIntArray( "maxHp" ), SOULCAGE_SLOTS_COUNT );
 		this.mobCount = Arrays.copyOf( nbt.getIntArray( "mobCount" ), SOULCAGE_SLOTS_COUNT );
+
+		for ( int i = 0 ; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+			this.mobName[i] = nbt.getString( "mobName" + i );
+			this.entityId[i] = nbt.getString( "entityId" + i );
+		}
 		
 		this.hasSoul = nbt.getBoolean( "hasSoul" );
 		this.wait = nbt.getInteger( "wait" );
@@ -352,13 +396,11 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	private static final byte NUMBER_OF_MOB_NAMES = FIRST_MOB_NAME + SOULCAGE_SLOTS_COUNT;
 	
 	public String getMobName( int id ) {
-		return mobName[id];
+		if ( this.maxHp[id] > 0 ) { 
+			return mobName[id];
+		}
+		return null;
 	}
-	public void setMobName( int id, String value ) {
-		this.mobName[id] = value;
-	}
-	
-	public int getMobNameCount() { return NUMBER_OF_MOB_NAMES; }
 	
 // ===================== //
 //  Unused but required  //

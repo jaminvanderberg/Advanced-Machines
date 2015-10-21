@@ -49,7 +49,7 @@ public class MobFarmGui extends BaseGuiContainer {
 		this.drawTexturedModalRect( this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize );
 		
 		for ( int i = 0; i < te.SOULCAGE_SLOTS_COUNT; i++ ) {
-			double hpRemaining = te.fractionOfHpRemaining( i );
+			double hpRemaining = te.getHpPercent( i );
 			int width = (int)( hpRemaining * HP_BAR_WIDTH );
 			this.drawTexturedModalRect(
 				this.guiLeft + HP_BAR_XPOS,
@@ -78,5 +78,15 @@ public class MobFarmGui extends BaseGuiContainer {
 		this.drawCenteredLangString( "tile.blockMobFarm.name", 7, 7, 162, 0x404040 );
 		
 		this.drawLangString( "gui.inventory.label", 7,  121, 0x404040 );
+		
+		for ( int i = 0; i < te.SOULCAGE_SLOTS_COUNT; i++ ) {
+			this.drawCenteredString( te.getMobName( i ), 29, 21 + i * HP_BAR_Y_SPACING, 140, 0x404040 );
+			
+			this.drawTooltip( 29, 18, 140, 18, "HP: " + te.getHp( i ) + "/" + te.getMaxHp( i ) );
+		}
+		
+		this.drawTooltip( 9, 49, 14, 68, 
+				te.getEnergyStored( null ) + "/" + te.getMaxEnergyStored( null ) + " RF"
+		);
 	}
 }

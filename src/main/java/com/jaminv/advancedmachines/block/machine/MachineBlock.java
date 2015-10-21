@@ -39,7 +39,7 @@ public class MachineBlock extends BaseMachineBlock {
 	}
 
 	@Override
-	protected IIcon getFace(int meta) {
+	protected IIcon getFace( int meta, boolean active ) {
 		return face[meta];
 	}
 	

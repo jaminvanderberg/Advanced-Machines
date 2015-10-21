@@ -31,6 +31,6 @@ public class CommonProxy {
 	}
 	
 	public void serverStart( FMLServerStartingEvent e ) {
-		MobRegistry.init();
+		MobRegistry.serverStart();
 	}
 }

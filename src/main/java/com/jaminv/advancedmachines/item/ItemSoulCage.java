@@ -58,7 +58,7 @@ public class ItemSoulCage extends Item {
 		filledIcon = ir.registerIcon( AdvancedMachines.MODID + ":soulcage-filled" );
 	}
 	
-	public boolean containsSoul( ItemStack item ) {
+	public boolean hasSoul( ItemStack item ) {
 		if ( item == null ) {
 			return false;
 		}
@@ -69,7 +69,7 @@ public class ItemSoulCage extends Item {
 	}
 	
 	public String getMobType( ItemStack item ) {
-		if ( ! containsSoul( item ) ) {
+		if ( ! hasSoul( item ) ) {
 			return null;
 		}
 		return item.stackTagCompound.getString( "id" );
@@ -79,7 +79,7 @@ public class ItemSoulCage extends Item {
 
 	@Override
 	public IIcon getIcon(ItemStack stack, int renderPass, EntityPlayer player, ItemStack usingItem, int useRemaining ) {
-		if ( containsSoul( stack ) ) {
+		if ( hasSoul( stack ) ) {
 			return filledIcon;
 		}
 		return itemIcon;
@@ -88,7 +88,7 @@ public class ItemSoulCage extends Item {
 	@Override
 	@SideOnly( Side.CLIENT )
 	public IIcon getIconIndex( ItemStack item ) {
-		if ( containsSoul( item ) ) {
+		if ( hasSoul( item ) ) {
 			return filledIcon;
 		}
 		return itemIcon;
@@ -122,7 +122,7 @@ public class ItemSoulCage extends Item {
 	}
 	
 	public Entity getSoulEntity( ItemStack item, World world ) {
-		if ( ! this.containsSoul( item ) ) { return null; }
+		if ( ! this.hasSoul( item ) ) { return null; }
 
 		Entity mob;
 		NBTTagCompound root = item.stackTagCompound;
@@ -144,7 +144,7 @@ public class ItemSoulCage extends Item {
 		if ( world.isRemote ) {
 			return true;
 		}
-		if ( ! containsSoul( item ) ) {
+		if ( ! hasSoul( item ) ) {
 			return false;
 		}
 		if ( player == null ) {
@@ -196,7 +196,7 @@ public class ItemSoulCage extends Item {
 		if ( entity.worldObj.isRemote ) {
 			return false;
 		}
-		if ( containsSoul( item ) ) {
+		if ( hasSoul( item ) ) {
 			return false;
 		}
 		if ( entity instanceof EntityPlayer ) {

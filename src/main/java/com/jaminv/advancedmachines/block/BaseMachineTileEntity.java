@@ -15,6 +15,8 @@ public abstract class BaseMachineTileEntity extends TileEntity implements IInven
 	
 	public short facing;
 	
+	public abstract boolean isActive();
+	
 	public short getFacing() { return facing; }
 	
 	@Override

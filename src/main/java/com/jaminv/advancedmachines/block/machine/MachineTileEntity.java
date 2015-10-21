@@ -51,6 +51,8 @@ public class MachineTileEntity extends BaseMachineTileEntity implements IUpdateP
 	
 	private int energy = 0;
 	
+	public boolean isActive() { return false; }
+	
 	public double fractionOfFuelRemaining( int fuelSlot ) {
 		if ( burnTimeInitialValue[fuelSlot] <= 0 ) { return 0; }
 		double fraction = burnTimeRemaining[fuelSlot] / (double)burnTimeInitialValue[fuelSlot];

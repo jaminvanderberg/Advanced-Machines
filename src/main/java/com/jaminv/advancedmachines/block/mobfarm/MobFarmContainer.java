@@ -157,8 +157,6 @@ public class MobFarmContainer extends Container {
 		slot.onPickupFromSlot( playerIn, stack );
 		return stackCopy;
 	}
-	
-	
 
 	@Override
 	public void detectAndSendChanges() {

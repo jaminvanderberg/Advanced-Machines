@@ -21,7 +21,7 @@ import net.minecraft.world.World;
 
 public class MobFarmBlock extends BaseMachineBlock {
 
-	public static IIcon[] face;
+	public static IIcon[][] face;
 	
 	protected MobFarmBlock() {
 		super( ModObject.blockMobFarm );
@@ -31,13 +31,14 @@ public class MobFarmBlock extends BaseMachineBlock {
 	public void registerBlockIcons( IIconRegister reg ) {
 		super.registerBlockIcons( reg );
 		
-		this.face = new IIcon[1];
-		this.face[0] = reg.registerIcon( AdvancedMachines.MODID + ":MachineMobFarm" );
+		this.face = new IIcon[1][2];
+		this.face[0][0] = reg.registerIcon( AdvancedMachines.MODID + ":MachineMobFarm" );
+		this.face[0][1] = reg.registerIcon( AdvancedMachines.MODID + ":MachineMobFarmActive" );
 	}
 
 	@Override
-	protected IIcon getFace(int meta) {
-		return face[meta];
+	protected IIcon getFace( int meta, boolean active ) {
+		return face[meta][active ? 1 : 0];
 	}	
 
 	@Override

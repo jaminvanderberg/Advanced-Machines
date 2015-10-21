@@ -68,20 +68,21 @@ public abstract class BaseMachineBlock extends BlockContainer {
 		}
 	}
 	
-	protected abstract IIcon getFace( int meta );
+	protected abstract IIcon getFace( int meta, boolean active );
 	
 	@Override
 	@SideOnly( Side.CLIENT )
 	public IIcon getIcon( IBlockAccess world, int x, int y, int z, int side ) {
 		TileEntity te = world.getTileEntity( x, y, z );
 		short facing = 0;
+		boolean active = false;
 		if ( te instanceof BaseMachineTileEntity ) {
 			facing = ((BaseMachineTileEntity)te).getFacing();
+			active = ((BaseMachineTileEntity)te).isActive();
 		}
-		//System.out.println( "Facing: " + facing + ", Side: " + side );
 		
 		if ( side == facing ) {
-			return this.getFace( world.getBlockMetadata( x, y,  z ) );
+			return this.getFace( world.getBlockMetadata( x, y,  z ), active );
 		}
 		if ( side >= 2 ) { return this.machineSide[2]; }
 		return this.machineSide[side];
@@ -91,7 +92,7 @@ public abstract class BaseMachineBlock extends BlockContainer {
 	@SideOnly( Side.CLIENT )
 	public IIcon getIcon( int side, int meta ) {
 		if ( side == 3 ) {
-			return this.getFace( meta );
+			return this.getFace( meta, false );
 		}
 		if ( side > 2 ) {
 			return this.machineSide[2];
