@@ -33,7 +33,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdatePlayerListBox, IEnergyReceiver {
 	
 	public static final int RF_CAPACITY = 60000;
-	public static final int RF_MAX_RECEIVE = 5;
+	public static final int RF_MAX_RECEIVE = 100;
 	
 	public static final int SOULCAGE_SLOTS_COUNT = 1;
 	public static final int OUTPUT_SLOTS_COUNT = 20;
@@ -81,11 +81,15 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 				if ( maxHp[i] < 0 ) { continue; }
 
 				if ( hpRemaining[i] <= 0 ) {
-					killMob( i );
+					spawnMob( i );
 				} else {
 					if ( energy >= mobCount[i] * rfconsume ) {
 						hpRemaining[i] -= speed;
 						energy -= mobCount[i] * rfconsume;
+						
+						if ( hpRemaining[i] <= 0 ) {
+							killMob( i );
+						}
 					}
 				}
 			}
@@ -94,20 +98,28 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		}
 	}
 	
+	/**
+	 * Add Mob Drops to the Output Slots
+	 * @param id Soulcage slot number
+	 */
 	private void killMob( int id ) {
 		ArrayList<ItemStack> drop = new ArrayList<ItemStack>();
 		ArrayList<MobEntry> mobentry = MobRegistry.getMobEntryList( this.entityId[id] );
+		System.out.println( mobentry );
 		if ( mobentry != null ) {
 			for( int i = 0; i < mobentry.size(); i++ ) {
 				drop.addAll( mobentry.get(i).getDrops( this.mobCount[id], this.loot, false ) );
+				System.out.println( drop );
 			}
 			
 			for( ItemStack item : drop ) {
+				System.out.println( item );
 				for ( int outputSlot = FIRST_OUTPUT_SLOT; outputSlot < FIRST_OUTPUT_SLOT + OUTPUT_SLOTS_COUNT; outputSlot++ ) {
 					ItemStack outputStack = itemStacks[outputSlot];
 					if ( outputStack == null ) {
 						int put = Math.min( item.stackSize, item.getMaxStackSize() );
-						outputStack = new ItemStack( item.getItem(), put );
+						System.out.println( "Empty slot: " + outputSlot + ", put = " + put );
+						itemStacks[outputSlot] = new ItemStack( item.getItem(), put );
 						item.stackSize -= put;
 						if ( item.stackSize <= 0 ) { break; }
 						continue;
@@ -118,15 +130,19 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 						&& ItemStack.areItemStackTagsEqual( outputStack, item )
 					) {
 						int put = Math.min( item.stackSize, outputStack.getMaxStackSize() );
-						outputStack.stackSize += put;
+						itemStacks[outputSlot].stackSize += put;
 						item.stackSize -= put;
 						if ( item.stackSize <= 0 ) { break; }
 						continue;					
 					}
 				}
 			}
+			
+			markDirty();
 		}
-		
+	}
+	
+	private void spawnMob( int id ) {		
 		if ( energy >= maxHp[id] * count * rfconsume ) {
 			hpRemaining[id] = maxHp[id];
 			mobCount[id] = count;
@@ -286,8 +302,8 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		nbt.setTag( "mobCount", new NBTTagIntArray( this.mobCount ) );
 
 		for ( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
-			nbt.setString( "mobName" + i, this.mobName[i] );
-			nbt.setString( "entityId" + i, this.entityId[i] );
+			if ( this.mobName[i] != null && ! this.mobName[i].equals( "" ) ) { nbt.setString( "mobName" + i, this.mobName[i] ); }
+			if ( this.entityId[i] != null && ! this.entityId[i].equals( "" ) ) { nbt.setString( "entityId" + i, this.entityId[i] ); }
 		}
 		
 		nbt.setBoolean( "hasSoul", this.hasSoul );
@@ -316,8 +332,8 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		this.mobCount = Arrays.copyOf( nbt.getIntArray( "mobCount" ), SOULCAGE_SLOTS_COUNT );
 
 		for ( int i = 0 ; i < SOULCAGE_SLOTS_COUNT; i++ ) {
-			this.mobName[i] = nbt.getString( "mobName" + i );
-			this.entityId[i] = nbt.getString( "entityId" + i );
+			if ( nbt.hasKey( "mobName" + i ) ) { this.mobName[i] = nbt.getString( "mobName" + i ); }
+			if ( nbt.hasKey( "entityId" + i ) ) { this.entityId[i] = nbt.getString( "entityId" + i ); }
 		}
 		
 		this.hasSoul = nbt.getBoolean( "hasSoul" );
