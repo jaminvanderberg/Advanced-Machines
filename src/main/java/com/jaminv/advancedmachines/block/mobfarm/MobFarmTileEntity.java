@@ -33,7 +33,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdatePlayerListBox, IEnergyReceiver {
 	
 	public static final int RF_CAPACITY = 60000;
-	public static final int RF_MAX_RECEIVE = 100;
+	public static final int RF_MAX_RECEIVE = 1000;
 	
 	public static final int SOULCAGE_SLOTS_COUNT = 1;
 	public static final int OUTPUT_SLOTS_COUNT = 20;
@@ -58,43 +58,46 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	private int energy = 0;	
 		
 	/* Upgrade Settings */
-	private int speed = 1;
+	private int speed = 4;
 	private int count = 1;
-	private int rfconsume = 400;
+	private int rfconsume = 1000;
 	private int loot = 0;
 	
 	@Override
 	public boolean isActive() { return hasSoul; }
 
+	private int iteration = 0;
+	
 	@Override
 	public void updateEntity() {
-		this.update();
 		super.updateEntity();
-	}
-
-	@Override
-	public void update() {
+		
 		if ( ! hasSoul ) { return; }
 		wait--;
-		if ( wait <= 0 ) {
-			for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
-				if ( maxHp[i] < 0 ) { continue; }
+		if ( wait > 0 ) { return; }
+		wait = 20;
+		iteration++;
+		System.out.println( "Iteration: " + iteration );
 
-				if ( hpRemaining[i] <= 0 ) {
-					spawnMob( i );
-				} else {
-					if ( energy >= mobCount[i] * rfconsume ) {
-						hpRemaining[i] -= speed;
-						energy -= mobCount[i] * rfconsume;
-						
-						if ( hpRemaining[i] <= 0 ) {
-							killMob( i );
-						}
+		for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+			if ( maxHp[i] < 0 ) { continue; }
+			
+			System.out.println( "hpRemaining[" + i + "] = " + hpRemaining[i] );
+
+			if ( hpRemaining[i] <= 0 ) {
+				System.out.println( "spawnMob(" + i + ")" );					
+				spawnMob( i );
+			} else {
+				if ( energy >= mobCount[i] * rfconsume ) {
+					hpRemaining[i] -= speed;
+					energy -= mobCount[i] * rfconsume;
+					
+					if ( hpRemaining[i] <= 0 ) {
+						System.out.println( "killMob(" + i + ")" );
+						killMob( i );
 					}
 				}
 			}
-			
-			wait = 20;
 		}
 	}
 	
@@ -123,9 +126,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 						item.stackSize -= put;
 						if ( item.stackSize <= 0 ) { break; }
 						continue;
-					}
-					
-					if ( outputStack.getItem() == item.getItem() 
+					} else if ( outputStack.getItem() == item.getItem() 
 						&& ( ! outputStack.getHasSubtypes() || outputStack.getItemDamage() == item.getItemDamage() )
 						&& ItemStack.areItemStackTagsEqual( outputStack, item )
 					) {
@@ -471,6 +472,10 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	
 	public double getEnergyPercent() {
 		return this.energy / (double)RF_CAPACITY;
+	}
+
+	@Override
+	public void update() {
 	}
 
 
