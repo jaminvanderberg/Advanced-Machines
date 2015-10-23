@@ -77,7 +77,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		if ( wait > 0 ) { return; }
 		wait = 20;
 		iteration++;
-		System.out.println( "Iteration: " + iteration );
+		System.out.println( (this.worldObj.isRemote ? "server" : "client" ) + " iteration: " + iteration );
 
 		for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
 			if ( maxHp[i] < 0 ) { continue; }
@@ -88,11 +88,13 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 				System.out.println( "spawnMob(" + i + ")" );					
 				spawnMob( i );
 			} else {
-				if ( energy >= mobCount[i] * rfconsume ) {
+				if ( energy >= mobCount[i] * rfconsume * count ) {
 					hpRemaining[i] -= speed;
-					energy -= mobCount[i] * rfconsume;
+					energy -= mobCount[i] * rfconsume * count;
 					
-					if ( hpRemaining[i] <= 0 ) {
+					// Run the kill process on the server only, then sync to the client
+					// Prevents mis-sync from item drop randomization
+					if ( hpRemaining[i] <= 0 && ! this.worldObj.isRemote ) {
 						System.out.println( "killMob(" + i + ")" );
 						killMob( i );
 					}
@@ -473,10 +475,5 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	public double getEnergyPercent() {
 		return this.energy / (double)RF_CAPACITY;
 	}
-
-	@Override
-	public void update() {
-	}
-
 
 }
