@@ -59,7 +59,7 @@ public class MobFarmBlock extends BaseMachineBlock {
 
 	@Override
 	public TileEntity createNewTileEntity( World worldIn, int meta ) {
-		return new MobFarmTileEntity();
+		return new MobFarmTileEntity( meta );
 	}
 
 	@Override

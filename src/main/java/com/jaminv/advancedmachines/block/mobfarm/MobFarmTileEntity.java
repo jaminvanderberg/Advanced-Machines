@@ -44,7 +44,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	public static final int FIRST_OUTPUT_SLOT = MobFarmGui.FIRST_OUTPUT_SLOT_NUMBER;
 	public static final int FIRST_VOID_SLOT = MobFarmGui.FIRST_VOID_SLOT_NUMBER;
 	
-	private int slots;
+	private int slots = -1;
 
 	private ItemStack[] itemStacks = new ItemStack[TOTAL_SLOTS_COUNT];
 	private String customName;
@@ -65,28 +65,31 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	private int rfconsume = 1000;
 	private int loot = 0;
 	
-	public MobFarmTileEntity() {
-		super();
-		
-		System.out.println( "Metadata = " + this.getBlockMetadata() );
-		this.slots = MobFarmGui.ACTUAL_SOULCAGE_SLOTS[this.getBlockMetadata()];
-		this.hpRemaining = new int[slots];
-		this.maxHp = new int[slots];
-		this.mobCount = new int[slots];
-		this.entityId = new String[slots];
-		this.mobName = new String[slots];
-	}
-	
-	
-
 	@Override
 	public boolean isActive() { return hasSoul; }
 
 	private int iteration = 0;
 	
+	public MobFarmTileEntity( int meta ) {
+		super();
+		
+		this.slots = MobFarmGui.ACTUAL_SOULCAGE_SLOTS[meta];
+		this.hpRemaining = new int[slots];
+		this.maxHp = new int[slots];
+		this.mobCount = new int[slots];
+		this.entityId = new String[slots];
+		this.mobName = new String[slots];
+		
+		this.setupFields();
+	}
+
 	@Override
 	public void updateEntity() {
 		super.updateEntity();
+
+		if( this.slots == -1 ) {
+
+		}
 		
 		if ( ! hasSoul ) { return; }
 		wait--;
