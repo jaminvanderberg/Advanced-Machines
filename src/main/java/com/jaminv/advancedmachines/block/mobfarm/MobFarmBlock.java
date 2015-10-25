@@ -1,5 +1,7 @@
 package com.jaminv.advancedmachines.block.mobfarm;
 
+import java.util.List;
+
 import com.jaminv.advancedmachines.AdvancedMachines;
 import com.jaminv.advancedmachines.ModObject;
 import com.jaminv.advancedmachines.block.BaseMachineBlock;
@@ -14,6 +16,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIcon;
@@ -21,6 +24,7 @@ import net.minecraft.world.World;
 
 public class MobFarmBlock extends BaseMachineBlock {
 
+	public static final String[] MACHINETYPES = { "Basic", "Advanced", "Ultimate" };
 	public static IIcon[][] face;
 	
 	protected MobFarmBlock() {
@@ -35,10 +39,22 @@ public class MobFarmBlock extends BaseMachineBlock {
 		this.face[0][0] = reg.registerIcon( AdvancedMachines.MODID + ":MachineMobFarm" );
 		this.face[0][1] = reg.registerIcon( AdvancedMachines.MODID + ":MachineMobFarmActive" );
 	}
+	
+	@Override
+	public void getSubBlocks( Item item, CreativeTabs tab, List list ) {
+		for ( int i = 0; i < MACHINETYPES.length; i++ ) {
+			list.add( new ItemStack( item, 1, i ) );
+		}
+	}
+
+	@Override
+	public int damageDropped( int i ) {
+		return i;
+	}
 
 	@Override
 	protected IIcon getFace( int meta, boolean active ) {
-		return face[meta][active ? 1 : 0];
+		return face[0][active ? 1 : 0];
 	}	
 
 	@Override

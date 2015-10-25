@@ -35,27 +35,29 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	public static final int RF_CAPACITY = 60000;
 	public static final int RF_MAX_RECEIVE = 1000;
 	
-	public static final int SOULCAGE_SLOTS_COUNT = 1;
-	public static final int OUTPUT_SLOTS_COUNT = 20;
-	public static final int VOID_SLOTS_COUNT = 8;
-	public static final int TOTAL_SLOTS_COUNT = SOULCAGE_SLOTS_COUNT + OUTPUT_SLOTS_COUNT + VOID_SLOTS_COUNT;
+	public static final int SOULCAGE_SLOTS_COUNT = MobFarmGui.SOULCAGE_SLOTS_COUNT;
+	public static final int OUTPUT_SLOTS_COUNT = MobFarmGui.OUTPUT_SLOTS_COUNT;
+	public static final int VOID_SLOTS_COUNT = MobFarmGui.VOID_SLOTS_COUNT;
+	public static final int TOTAL_SLOTS_COUNT = MobFarmGui.TOTAL_MACHINE_SLOTS_COUNT;
 	
-	public static final int FIRST_SOULCAGE_SLOT = 0;
-	public static final int FIRST_OUTPUT_SLOT = FIRST_SOULCAGE_SLOT + SOULCAGE_SLOTS_COUNT;
-	public static final int FIRST_VOID_SLOT = FIRST_OUTPUT_SLOT + OUTPUT_SLOTS_COUNT;
+	public static final int FIRST_SOULCAGE_SLOT = MobFarmGui.FIRST_SOULCAGE_SLOT_NUMBER;
+	public static final int FIRST_OUTPUT_SLOT = MobFarmGui.FIRST_OUTPUT_SLOT_NUMBER;
+	public static final int FIRST_VOID_SLOT = MobFarmGui.FIRST_VOID_SLOT_NUMBER;
+	
+	private int slots;
 
 	private ItemStack[] itemStacks = new ItemStack[TOTAL_SLOTS_COUNT];
 	private String customName;
 	
-	private int[] hpRemaining = new int[SOULCAGE_SLOTS_COUNT];
-	private int[] maxHp = new int[SOULCAGE_SLOTS_COUNT];
-	private int[] mobCount = new int[SOULCAGE_SLOTS_COUNT];
-	private String[] entityId = new String[SOULCAGE_SLOTS_COUNT];
-	private String[] mobName = new String[SOULCAGE_SLOTS_COUNT];
+	private int[] hpRemaining;
+	private int[] maxHp;
+	private int[] mobCount;
+	private String[] entityId;
+	private String[] mobName;
 	
 	private boolean hasSoul = false;
 	private int wait = 20;
-	private int energy = 0;	
+	private int energy = 0;
 		
 	/* Upgrade Settings */
 	private int speed = 4;
@@ -63,6 +65,20 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	private int rfconsume = 1000;
 	private int loot = 0;
 	
+	public MobFarmTileEntity() {
+		super();
+		
+		System.out.println( "Metadata = " + this.getBlockMetadata() );
+		this.slots = MobFarmGui.ACTUAL_SOULCAGE_SLOTS[this.getBlockMetadata()];
+		this.hpRemaining = new int[slots];
+		this.maxHp = new int[slots];
+		this.mobCount = new int[slots];
+		this.entityId = new String[slots];
+		this.mobName = new String[slots];
+	}
+	
+	
+
 	@Override
 	public boolean isActive() { return hasSoul; }
 
@@ -79,7 +95,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		iteration++;
 		System.out.println( (this.worldObj.isRemote ? "server" : "client" ) + " iteration: " + iteration );
 
-		for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+		for( int i = 0; i < this.slots; i++ ) {
 			if ( maxHp[i] < 0 ) { continue; }
 			
 			System.out.println( "hpRemaining[" + i + "] = " + hpRemaining[i] );
@@ -175,7 +191,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		if ( this.maxHp[id] <= 0 ) { this.hpRemaining[id] = 0; }
 		
 		this.hasSoul = false;
-		for( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+		for( int i = 0; i < this.slots; i++ ) {
 			if ( maxHp[i] > 0 ) { this.hasSoul = true; return; }
 		}
 	}
@@ -304,7 +320,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		nbt.setTag( "maxHp", new NBTTagIntArray( this.maxHp ) );
 		nbt.setTag( "mobCount", new NBTTagIntArray( this.mobCount ) );
 
-		for ( int i = 0; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+		for ( int i = 0; i < this.slots; i++ ) {
 			if ( this.mobName[i] != null && ! this.mobName[i].equals( "" ) ) { nbt.setString( "mobName" + i, this.mobName[i] ); }
 			if ( this.entityId[i] != null && ! this.entityId[i].equals( "" ) ) { nbt.setString( "entityId" + i, this.entityId[i] ); }
 		}
@@ -330,11 +346,11 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 			this.setInventorySlotContents( slot, ItemStack.loadItemStackFromNBT( stackTag ) );
 		}
 		
-		this.hpRemaining = Arrays.copyOf( nbt.getIntArray( "hpRemaining" ), SOULCAGE_SLOTS_COUNT );
-		this.maxHp = Arrays.copyOf( nbt.getIntArray( "maxHp" ), SOULCAGE_SLOTS_COUNT );
-		this.mobCount = Arrays.copyOf( nbt.getIntArray( "mobCount" ), SOULCAGE_SLOTS_COUNT );
+		this.hpRemaining = Arrays.copyOf( nbt.getIntArray( "hpRemaining" ), this.slots );
+		this.maxHp = Arrays.copyOf( nbt.getIntArray( "maxHp" ), this.slots );
+		this.mobCount = Arrays.copyOf( nbt.getIntArray( "mobCount" ), this.slots );
 
-		for ( int i = 0 ; i < SOULCAGE_SLOTS_COUNT; i++ ) {
+		for ( int i = 0 ; i < this.slots; i++ ) {
 			if ( nbt.hasKey( "mobName" + i ) ) { this.mobName[i] = nbt.getString( "mobName" + i ); }
 			if ( nbt.hasKey( "entityId" + i ) ) { this.entityId[i] = nbt.getString( "entityId" + i ); }
 		}
@@ -382,12 +398,23 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 //  Fields  //
 // ======== //
 	
-	private static final byte FIRST_HP_FIELD_ID = 0;
-	private static final byte ENERGY_FIELD_ID = FIRST_HP_FIELD_ID + (byte)SOULCAGE_SLOTS_COUNT;
-	private static final byte NUMBER_OF_FIELDS = ENERGY_FIELD_ID + 1;
+	private byte FIRST_HP_FIELD_ID;
+	private byte ENERGY_FIELD_ID;
+	private byte NUMBER_OF_FIELDS;
+	private byte FIRST_MOB_NAME;
+	private byte NUMBER_OF_MOB_NAMES;
+	
+	private void setupFields() {
+		FIRST_HP_FIELD_ID = 0;
+		ENERGY_FIELD_ID = (byte)( FIRST_HP_FIELD_ID + (byte)this.slots );
+		NUMBER_OF_FIELDS = (byte)( ENERGY_FIELD_ID + 1 );
+		
+		FIRST_MOB_NAME = 0;
+		NUMBER_OF_MOB_NAMES = (byte)( this.slots );
+	}
 	
 	public int getField( int id ) {
-		if ( id >= FIRST_HP_FIELD_ID && id < FIRST_HP_FIELD_ID + SOULCAGE_SLOTS_COUNT ) {
+		if ( id >= FIRST_HP_FIELD_ID && id < FIRST_HP_FIELD_ID + this.slots ) {
 			return hpRemaining[id - FIRST_HP_FIELD_ID];
 		}
 		if ( id == ENERGY_FIELD_ID ) {
@@ -398,7 +425,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	}
 	
 	public void setField( int id, int value ) {
-		if ( id >= FIRST_HP_FIELD_ID && id < FIRST_HP_FIELD_ID + SOULCAGE_SLOTS_COUNT ) {
+		if ( id >= FIRST_HP_FIELD_ID && id < FIRST_HP_FIELD_ID + this.slots ) {
 			hpRemaining[id - FIRST_HP_FIELD_ID] = value;
 		} else if ( id == ENERGY_FIELD_ID ) {
 			energy = value;
@@ -411,8 +438,7 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		return NUMBER_OF_FIELDS;
 	}
 	
-	private static final byte FIRST_MOB_NAME = 0;
-	private static final byte NUMBER_OF_MOB_NAMES = FIRST_MOB_NAME + SOULCAGE_SLOTS_COUNT;
+
 	
 	public String getMobName( int id ) {
 		if ( this.maxHp[id] > 0 ) { 
