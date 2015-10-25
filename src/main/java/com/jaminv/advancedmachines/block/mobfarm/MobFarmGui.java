@@ -32,6 +32,8 @@ public class MobFarmGui extends BaseGuiContainer {
 		this.xSize = DIALOG_WIDTH[te.getBlockMetadata()];
 		this.ySize = DIALOG_HEIGHT[te.getBlockMetadata()];
 		
+		System.out.println( "Meta = " + te.getBlockMetadata() + ", xSize = " + xSize + ", ySize = " + ySize );
+		
 		this.te = te;
 	}
 	
