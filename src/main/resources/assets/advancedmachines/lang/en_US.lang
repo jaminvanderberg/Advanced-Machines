@@ -7,6 +7,7 @@ tile.blockOreTitanium.name=Titanium Ore
 tile.blockMobFarm.name=Mob Farm
 
 gui.inventory.label=Inventory
+gui.voiditems.label=Void Items
 gui.mobfarm.output.label=Drops
 gui.mobfarm.void.label=Void Items
 

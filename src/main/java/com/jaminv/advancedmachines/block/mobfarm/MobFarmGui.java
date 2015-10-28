@@ -79,8 +79,8 @@ public class MobFarmGui extends BaseGuiContainer {
 	final public static int[] VOID_SLOTS_XPOS = { 32, 32, 32 };
 	final public static int[] VOID_SLOTS_YPOS = { 110, 130, 130 };	
 	
-	final public static int[] HP_BAR_XPOS = { 51, 51, 134, 134 };
-	final public static int[] HP_BAR_YPOS = { 30, 50, 30, 50 };
+	final public static int[] HP_BAR_XPOS = { 53, 53, 51 };
+	final public static int[] HP_BAR_YPOS = { 30, 30, 30 };
 	final public static int[] HP_BAR_ICON_U = { 0, 0, 0 };
 	final public static int[] HP_BAR_ICON_V = { 251, 251, 251 };
 	final public static int[] HP_BAR_WIDTH = { 140, 140, 59 };
@@ -93,8 +93,8 @@ public class MobFarmGui extends BaseGuiContainer {
 	final public static int[] WAIT_ICON_U = { 0, 0, 0 };
 	final public static int[] WAIT_ICON_V = { 246, 246, 246 };
 	
-	final public static int[] ENERGY_XPOS = { 34, 34, 34 };
-	final public static int[] ENERGY_YPOS = { 47, 67, 67 };
+	final public static int[] ENERGY_XPOS = { 33, 33, 33 };
+	final public static int[] ENERGY_YPOS = { 46, 66, 66 };
 	final public static int[] ENERGY_ICON_U = { 200, 200, 200 };
 	final public static int[] ENERGY_ICON_V = { 0, 0, 0 };
 	final public static int[] ENERGY_WIDTH = { 14, 14, 14 };
@@ -109,6 +109,25 @@ public class MobFarmGui extends BaseGuiContainer {
 	final public static int[] TAB_YPOS = { 0, 25, 50, 75 };
 	final public static int TAB_WIDTH = 24;
 	final public static int TAB_HEIGHT = 24;
+	
+	final public static int[] MOB_NAME_XPOS = { 53, 53, 53 };
+	final public static int[] MOB_NAME_YPOS = { 20, 20, 20 };
+	final public static int[] MOB_NAME_X_SPACING = { 83, 83, 83 };
+	final public static int[] MOB_NAME_Y_SPACING = { 20, 20, 20 };
+	final public static int[] MOB_NAME_WIDTH = { 140, 140, 59 };	
+	
+	final public static int[] VOID_ITEMS_TITLE_XPOS = { 31, 31, 31 };
+	final public static int[] VOID_ITEMS_TITLE_YPOS = { 100, 120, 120 };
+	
+	final public static int[] INVENTORY_TITLE_XPOS = { 31, 31, 31 };
+	final public static int[] INVENTORY_TITLE_YPOS = { 129, 149, 149 };
+	
+	public static int getSoulcageSlotX( int i ) {
+		return (int)( i / SOULCAGE_SLOTS_COL_COUNT );
+	}
+	public static int getSoulcageSlotY( int i ) {
+		return i % SOULCAGE_SLOTS_ROW_COUNT;
+	}
 
 	@Override
 	protected void drawGuiContainerBackgroundLayer( float partialTicks, int mouseX, int mouseY ) {
@@ -119,11 +138,11 @@ public class MobFarmGui extends BaseGuiContainer {
 		for ( int i = 0; i < ACTUAL_SOULCAGE_SLOTS[meta]; i++ ) {
 			double hpRemaining = te.getHpPercent( i );
 			int width = (int)( hpRemaining * HP_BAR_WIDTH[meta] );
-			int x = i % SOULCAGE_SLOTS_ROW_COUNT;
-			int y = (int)( i / SOULCAGE_SLOTS_ROW_COUNT );
+			int x = getSoulcageSlotX( i );
+			int y = getSoulcageSlotY( i );
 			this.drawTexturedModalRect(
 				this.guiLeft + HP_BAR_XPOS[meta] + HP_BAR_X_SPACING[meta] * x,
-				this.guiTop + HP_BAR_YPOS[i] + HP_BAR_Y_SPACING[meta] * y,
+				this.guiTop + HP_BAR_YPOS[meta] + HP_BAR_Y_SPACING[meta] * y,
 				HP_BAR_ICON_U[meta],
 				HP_BAR_ICON_V[meta],
 				width,
@@ -149,10 +168,27 @@ public class MobFarmGui extends BaseGuiContainer {
 		
 		this.drawCenteredLangString( "tile.blockMobFarm.name", 7, 7, 162, 0x404040 );
 		
-		this.drawLangString( "gui.inventory.label", 7,  121, 0x404040 );
+		this.drawLangString( "gui.voiditems.label",
+			VOID_ITEMS_TITLE_XPOS[meta],
+			VOID_ITEMS_TITLE_YPOS[meta],
+			0x404040
+		);
+		this.drawLangString( "gui.inventory.label", 
+			INVENTORY_TITLE_XPOS[meta],
+			INVENTORY_TITLE_YPOS[meta],
+			0x404040
+		);
 		
 		for ( int i = 0; i < ACTUAL_SOULCAGE_SLOTS[meta]; i++ ) {
-			this.drawCenteredString( te.getMobName( i ), 29, 21 + i * HP_BAR_Y_SPACING[meta], 140, 0x404040 );
+			int x = getSoulcageSlotX( i );
+			int y = getSoulcageSlotY( i );
+			
+			this.drawCenteredString( te.getMobName( i ), 
+				MOB_NAME_XPOS[meta] + x * MOB_NAME_X_SPACING[meta],
+				MOB_NAME_YPOS[meta] + y * MOB_NAME_Y_SPACING[meta], 
+				MOB_NAME_WIDTH[meta],
+				0x404040
+			);
 			
 			this.drawTooltip( 29, 18, 140, 18, "HP: " + te.getHp( i ) + "/" + te.getMaxHp( i ) );
 		}

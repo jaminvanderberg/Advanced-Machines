@@ -173,7 +173,9 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 	}
 	
 	private void updateSoul( int id ) {
-		if ( id < FIRST_SOULCAGE_SLOT || id >= FIRST_SOULCAGE_SLOT + SOULCAGE_SLOTS_COUNT ) {
+		if ( id < FIRST_SOULCAGE_SLOT 
+			|| id >= FIRST_SOULCAGE_SLOT + MobFarmGui.ACTUAL_SOULCAGE_SLOTS[this.getBlockMetadata()] ) {
+			
 			return;
 		}
 		id -= FIRST_SOULCAGE_SLOT;
@@ -323,10 +325,10 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		nbt.setTag( "maxHp", new NBTTagIntArray( this.maxHp ) );
 		nbt.setTag( "mobCount", new NBTTagIntArray( this.mobCount ) );
 
-		for ( int i = 0; i < this.slots; i++ ) {
-			if ( this.mobName[i] != null && ! this.mobName[i].equals( "" ) ) { nbt.setString( "mobName" + i, this.mobName[i] ); }
-			if ( this.entityId[i] != null && ! this.entityId[i].equals( "" ) ) { nbt.setString( "entityId" + i, this.entityId[i] ); }
-		}
+		//for ( int i = 0; i < this.slots; i++ ) {
+		//	if ( this.mobName[i] != null && ! this.mobName[i].equals( "" ) ) { nbt.setString( "mobName" + i, this.mobName[i] ); }
+		//	if ( this.entityId[i] != null && ! this.entityId[i].equals( "" ) ) { nbt.setString( "entityId" + i, this.entityId[i] ); }
+		//}
 		
 		nbt.setBoolean( "hasSoul", this.hasSoul );
 		nbt.setInteger( "wait", this.wait );
@@ -353,10 +355,10 @@ public class MobFarmTileEntity extends BaseMachineTileEntity implements IUpdateP
 		this.maxHp = Arrays.copyOf( nbt.getIntArray( "maxHp" ), this.slots );
 		this.mobCount = Arrays.copyOf( nbt.getIntArray( "mobCount" ), this.slots );
 
-		for ( int i = 0 ; i < this.slots; i++ ) {
-			if ( nbt.hasKey( "mobName" + i ) ) { this.mobName[i] = nbt.getString( "mobName" + i ); }
-			if ( nbt.hasKey( "entityId" + i ) ) { this.entityId[i] = nbt.getString( "entityId" + i ); }
-		}
+		//for ( int i = 0 ; i < this.slots; i++ ) {
+		//	if ( nbt.hasKey( "mobName" + i ) ) { this.mobName[i] = nbt.getString( "mobName" + i ); }
+		//	if ( nbt.hasKey( "entityId" + i ) ) { this.entityId[i] = nbt.getString( "entityId" + i ); }
+		//}
 		
 		this.hasSoul = nbt.getBoolean( "hasSoul" );
 		this.wait = nbt.getInteger( "wait" );

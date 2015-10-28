@@ -88,8 +88,8 @@ public class MobFarmContainer extends Container {
 		// Tile entity fuel slots
 		for ( int i = 0; i < MobFarmGui.ACTUAL_SOULCAGE_SLOTS[meta]; i++ ) {
 			int slotNumber = i + FIRST_SOULCAGE_SLOT_NUMBER;
-			int x = i % SOULCAGE_SLOTS_ROW_COUNT;
-			int y = (int)( i / SOULCAGE_SLOTS_ROW_COUNT );
+			int x = MobFarmGui.getSoulcageSlotX( i );
+			int y = MobFarmGui.getSoulcageSlotY( i );
 
 			this.addSlotToContainer( new SlotSoulcage( te, slotNumber, 
 					SOULCAGE_SLOTS_XPOS + SOULCAGE_SLOTS_X_SPACING * x, 
